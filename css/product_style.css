@@ -1,0 +1,10 @@
+.table th, .table td {
+    vertical-align: middle;
+}
+.table img {
+    border-radius: 8px;
+}
+.btn-custom {
+    font-size: 0.875rem;
+    padding: 0.5rem 1rem;
+}

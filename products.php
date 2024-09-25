@@ -5,39 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Products Management</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css">
-    <style>
-        .table th, .table td {
-            vertical-align: middle;
-        }
-        .table img {
-            border-radius: 8px;
-        }
-        .btn-custom {
-            font-size: 0.875rem;
-            padding: 0.5rem 1rem;
-        }
-    </style>
+    <link rel="stylesheet" href="css/product_style.css">
 </head>
+
 <body>
     <!-- Navigation Bar -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#">DELIDAZE Admin</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link" href="#">Home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="products.html">Products</a></li>
-                    <li class="nav-item"><a class="nav-link" href="orders.html">Orders</a></li>
-                    <li class="nav-item"><a class="nav-link" href="inventory.html">Inventory</a></li>
-                    <li class="nav-item"><a class="nav-link" href="users.html">Users</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">Logout</a></li>
-                </ul>
-            </div>
-        </div>
-    </nav>
+    <?php include ('include/nav.php')?>
+
     <div class="container mt-5">
         <h2 class="mb-4">Products Management</h2>
         <!-- Button to trigger modal -->

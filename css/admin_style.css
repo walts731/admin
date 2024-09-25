@@ -1,0 +1,68 @@
+
+body {
+    background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
+    color: #333;
+    font-family: Arial, sans-serif;
+}
+/* Custom Button Styles */
+.btn-custom {
+    font-weight: bold;
+    padding: 15px 20px;
+    font-size: 18px;
+    border-radius: 10px;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+.btn-custom:hover {
+    transform: scale(1.05);
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
+}
+.btn-products {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    border: none;
+    color: white;
+}
+.btn-orders {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    border: none;
+    color: white;
+}
+.btn-inventory {
+    background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+    border: none;
+    color: white;
+}
+.btn-users {
+    background: linear-gradient(135deg, #5ee7df 0%, #b490ca 100%);
+    border: none;
+    color: white;
+}
+.btn-analytics {
+    background: linear-gradient(135deg, #c1dfc4 0%, #deecdd 100%);
+    border: none;
+    color: white;
+}
+/* Styles for Top Selling Products */
+.top-products-container {
+    margin-top: 40px;
+}
+.product-card {
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    overflow: hidden;
+    text-align: center;
+}
+.product-image {
+    height: 200px;
+    width: 100%;
+    object-fit: cover;
+}
+.product-details {
+    padding: 10px;
+}
+.product-title {
+    font-size: 18px;
+    font-weight: bold;
+}
+.product-sales {
+    color: #888;
+}
