@@ -100,5 +100,75 @@ include ('include/connect.php');
         </div>
     </div>
 </div>
+
+<!-- Low Stock Alert Section -->
+<div class="container mt-5">
+    <h2>Low Stock Alerts</h2>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Mini Snackbox</h5>
+                    <p class="card-text">Stock: 5 units</p>
+                    <p class="text-danger">⚠️ Low Stock Alert!</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Spam Overload</h5>
+                    <p class="card-text">Stock: 3 units</p>
+                    <p class="text-danger">⚠️ Low Stock Alert!</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Ham Overload</h5>
+                    <p class="card-text">Stock: 2 units</p>
+                    <p class="text-danger">⚠️ Low Stock Alert!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+    <!-- Top Selling Products Section -->
+    <div class="container top-products-container">
+        <h2>Top Selling Products</h2>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="product-card">
+                    <img src="./img/menu 1.jpg" alt="Product 1" class="product-image">
+                    <div class="product-details">
+                        <h5 class="product-title">Mini Snackbox</h5>
+                        <p class="product-sales">Sold: 120 units</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="product-card">
+                    <img src="./img/menu 2.jpg" alt="Product 2" class="product-image">
+                    <div class="product-details">
+                        <h5 class="product-title">Spam Overload</h5>
+                        <p class="product-sales">Sold: 100 units</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="product-card">
+                    <img src="./img/menu 3.jpg" alt="Product 3" class="product-image">
+                    <div class="product-details">
+                        <h5 class="product-title">Ham Overload</h5>
+                        <p class="product-sales">Sold: 85 units</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>
