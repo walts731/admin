@@ -1,4 +1,6 @@
-<?php include ('include/connect.php')?>
+<?php
+include ('include/connect.php');
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -11,18 +13,24 @@
 <body>
 
 <?php
-    
-    
     // Example SQL Queries
     $totalProducts = $conn->query("SELECT COUNT(*) as total FROM products")->fetch_assoc()['total'];
     $totalOrders = $conn->query("SELECT COUNT(*) as total FROM orders")->fetch_assoc()['total'];
     $pendingOrders = $conn->query("SELECT COUNT(*) as pending FROM orders WHERE status='pending'")->fetch_assoc()['pending'];
-    $salesSummary = $conn->query("SELECT SUM(total_price) as total_sales FROM orders")->fetch_assoc()['total_sales'];
-    $totalRevenue = $conn->query("SELECT SUM(total_price) as revenue FROM sales")->fetch_assoc()['revenue'];
+    $salesSummary = $conn->query("SELECT SUM(total_price) as total_sales FROM orders WHERE status='completed'")->fetch_assoc()['total_sales'];
+
+    // Calculate total revenue dynamically based on product prices and inventory costs
+    $revenueSql = "
+        SELECT SUM(p.price - i.cost) AS total_revenue 
+        FROM products p 
+        JOIN inventory i ON p.product_id = i.product_id
+        WHERE p.stock > 0"; // Assuming you only want to consider products that are in stock
+
+    $totalRevenue = $conn->query($revenueSql)->fetch_assoc()['total_revenue']; 
 ?>
 
 <!-- Navigation Bar -->
-<?php include ('include/nav.php')?>
+<?php include ('include/nav.php') ?>
 
 <!-- Dashboard Summary -->
 <div class="container mt-4">
@@ -59,7 +67,7 @@
                 </div>
             </div>
         </div>
-        <!-- Added Analytics Card -->
+        <!-- Dynamic Total Revenue Card -->
         <div class="col-md-3 mt-3">
             <div class="card text-center">
                 <div class="card-body">
@@ -73,24 +81,24 @@
 
 <!-- Section Buttons -->
 <div class="container mt-5">
-        <h2>Manage Sections</h2>
-        <div class="row">
-            <div class="col-md-3">
-                <a href="products.php" class="btn btn-custom btn-products">Manage Products</a>
-            </div>
-            <div class="col-md-3">
-                <a href="orders.php" class="btn btn-custom btn-orders">Manage Orders</a>
-            </div>
-            <div class="col-md-3">
-                <a href="inventory.php" class="btn btn-custom btn-inventory">Manage Inventory</a>
-            </div>
-            <div class="col-md-3">
-                <a href="users.php" class="btn btn-custom btn-users">Manage Users</a>
-            </div>
-            <!-- Added Analytics Button -->
-            <div class="col-md-3 mt-3">
-                <a href="analytics.php" class="btn btn-custom btn-analytics">View Analytics</a>
-            </div>
+    <h2>Manage Sections</h2>
+    <div class="row">
+        <div class="col-md-3">
+            <a href="products.php" class="btn btn-custom btn-products">Manage Products</a>
         </div>
-    </div></body>
+        <div class="col-md-3">
+            <a href="orders.php" class="btn btn-custom btn-orders">Manage Orders</a>
+        </div>
+        <div class="col-md-3">
+            <a href="inventory.php" class="btn btn-custom btn-inventory">Manage Inventory</a>
+        </div>
+        <div class="col-md-3">
+            <a href="users.php" class="btn btn-custom btn-users">Manage Users</a>
+        </div>
+        <div class="col-md-3 mt-3">
+            <a href="analytics.php" class="btn btn-custom btn-analytics">View Analytics</a>
+        </div>
+    </div>
+</div>
+</body>
 </html>

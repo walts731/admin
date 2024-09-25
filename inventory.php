@@ -1,3 +1,42 @@
+<?php
+include('include/connect.php');
+
+// Check and create inventory table structure if it doesn't exist
+$checkTableSql = "CREATE TABLE IF NOT EXISTS inventory (
+    inventory_id INT AUTO_INCREMENT PRIMARY KEY,
+    product_id INT NOT NULL,
+    stock INT DEFAULT 0,
+    cost DECIMAL(10, 2) NOT NULL,
+    last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (product_id) REFERENCES products(product_id)
+)";
+$conn->query($checkTableSql);
+
+// Fetch products from the database
+$sql = "SELECT `product_id`, `product_name`, `product_description`, `stock`, `price`, `image_url`, `created_at` FROM `products`";
+$result = $conn->query($sql);
+
+// Check if the form has been submitted to update a product in the inventory
+if (isset($_POST['updateInventory'])) {
+    $productId = $_POST['productId'];
+    $stock = $_POST['stock'];
+    $cost = $_POST['cost']; // Assuming cost is provided in the form
+
+    // Update the selected product in the inventory table
+    $updateSql = "UPDATE inventory SET stock = ?, cost = ? WHERE product_id = ?";
+    $stmt = $conn->prepare($updateSql);
+    $stmt->bind_param("idi", $stock, $cost, $productId);
+
+    if ($stmt->execute()) {
+        echo "<script>alert('Inventory updated successfully!');</script>";
+    } else {
+        echo "<script>alert('Error updating inventory: " . $conn->error . "');</script>";
+    }
+
+    $stmt->close();
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,7 +47,7 @@
 </head>
 <body>
     <!-- Navigation Bar -->
-    <?php include ('include/nav.php')?>
+    <?php include('include/nav.php') ?>
 
     <div class="container mt-5">
         <h2>Inventory Management</h2>
@@ -16,59 +55,41 @@
             <thead>
                 <tr>
                     <th>Product Name</th>
-                    <th>Stock Quantity</th>
-                    <th>Stock Status</th>
+                    <th>Current Stock</th>
+                    <th>Cost</th>
                     <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td>Mini Snackbox</td>
-                    <td>50</td>
-                    <td><span class="badge bg-success">In Stock</span></td>
-                    <td><button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#updateStockModal">Update Stock</button></td>
-                </tr>
-                <tr>
-                    <td>Ham Overload</td>
-                    <td>10</td>
-                    <td><span class="badge bg-warning">Low Stock</span></td>
-                    <td><button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#updateStockModal">Update Stock</button></td>
-                </tr>
-                <tr>
-                    <td>Chicken Wrap</td>
-                    <td>0</td>
-                    <td><span class="badge bg-danger">Out of Stock</span></td>
-                    <td><button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#updateStockModal">Update Stock</button></td>
-                </tr>
-                <!-- More inventory items go here -->
+                <?php
+                // Fetch inventory items to display
+                $inventorySql = "SELECT inv.*, p.product_name FROM inventory inv JOIN products p ON inv.product_id = p.product_id";
+                $inventoryResult = $conn->query($inventorySql);
+
+                if ($inventoryResult->num_rows > 0) {
+                    while ($row = $inventoryResult->fetch_assoc()) {
+                        echo "<tr>
+                            <td>" . htmlspecialchars($row['product_name']) . "</td>
+                            <td>" . htmlspecialchars($row['stock']) . "</td>
+                            <td>" . htmlspecialchars($row['cost']) . "</td>
+                            <td>
+                                <form method='POST' action=''>
+                                    <input type='hidden' name='productId' value='" . $row['product_id'] . "'>
+                                    <div class='input-group'>
+                                        <input type='number' name='stock' class='form-control' placeholder='Stock Quantity' value='" . htmlspecialchars($row['stock']) . "' required>
+                                        <input type='number' step='0.01' name='cost' class='form-control' placeholder='Cost' value='" . htmlspecialchars($row['cost']) . "' required>
+                                        <button type='submit' name='updateInventory' class='btn btn-warning'>Update Inventory</button>
+                                    </div>
+                                </form>
+                            </td>
+                        </tr>";
+                    }
+                } else {
+                    echo "<tr><td colspan='4'>No inventory items available</td></tr>";
+                }
+                ?>
             </tbody>
         </table>
-    </div>
-
-    <!-- Modal -->
-    <div class="modal fade" id="updateStockModal" tabindex="-1" aria-labelledby="updateStockModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="updateStockModalLabel">Update Stock</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form>
-                        
-                        <div class="mb-3">
-                            <label for="stockQuantity" class="form-label">Stock Quantity</label>
-                            <input type="number" class="form-control" id="stockQuantity" placeholder="Stock Quantity">
-                        </div>
-                        <!-- Add other fields as needed -->
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary">Save changes</button>
-                </div>
-            </div>
-        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
