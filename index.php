@@ -1,5 +1,42 @@
 <?php
 include ('include/connect.php');
+
+// Example SQL Queries (unchanged)
+$totalProducts = $conn->query("SELECT COUNT(*) as total FROM products")->fetch_assoc()['total'];
+$totalOrders = $conn->query("SELECT COUNT(*) as total FROM orders")->fetch_assoc()['total'];
+$pendingOrders = $conn->query("SELECT COUNT(*) as pending FROM orders WHERE status='pending'")->fetch_assoc()['pending'];
+$salesSummary = $conn->query("SELECT SUM(total_price) as total_sales FROM orders WHERE status='completed'")->fetch_assoc()['total_sales'];
+
+// Calculate total revenue dynamically
+$revenueSql = "
+    SELECT SUM(p.price - i.cost) AS total_revenue 
+    FROM products p 
+    JOIN inventory i ON p.product_id = i.product_id
+    WHERE p.stock > 0"; // Considering only products that are in stock
+
+$totalRevenue = $conn->query($revenueSql)->fetch_assoc()['total_revenue'];
+
+// Fetch low stock products (e.g., stock < 5)
+$lowStockSql = "
+    SELECT i.product_id, p.product_name, i.stock 
+    FROM inventory i 
+    JOIN products p ON i.product_id = p.product_id 
+    WHERE i.stock < 5"; // Adjust the stock threshold as needed
+
+$lowStockResult = $conn->query($lowStockSql);
+
+// SQL query to get top-selling products from completed orders
+$topSellingSql = "
+    SELECT oi.product_id, p.product_name, p.image_url, SUM(oi.quantity) as total_sold
+    FROM order_items oi
+    JOIN orders o ON oi.order_id = o.order_id
+    JOIN products p ON oi.product_id = p.product_id
+    WHERE o.status = 'completed'
+    GROUP BY oi.product_id
+    ORDER BY total_sold DESC
+    LIMIT 3"; // You can adjust the limit to show more top-selling products
+
+$topSellingResult = $conn->query($topSellingSql);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -101,74 +138,50 @@ include ('include/connect.php');
     </div>
 </div>
 
-<!-- Low Stock Alert Section -->
+<!-- Dynamic Low Stock Alert Section -->
 <div class="container mt-5">
     <h2>Low Stock Alerts</h2>
     <div class="row">
-        <div class="col-md-4">
-            <div class="card text-center">
-                <div class="card-body">
-                    <h5 class="card-title">Mini Snackbox</h5>
-                    <p class="card-text">Stock: 5 units</p>
-                    <p class="text-danger">⚠️ Low Stock Alert!</p>
+        <?php if ($lowStockResult->num_rows > 0): ?>
+            <?php while ($row = $lowStockResult->fetch_assoc()): ?>
+                <div class="col-md-4">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title"><?php echo $row['product_name']; ?></h5>
+                            <p class="card-text">Stock: <?php echo $row['stock']; ?> units</p>
+                            <p class="text-danger">⚠️ Low Stock Alert!</p>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card text-center">
-                <div class="card-body">
-                    <h5 class="card-title">Spam Overload</h5>
-                    <p class="card-text">Stock: 3 units</p>
-                    <p class="text-danger">⚠️ Low Stock Alert!</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card text-center">
-                <div class="card-body">
-                    <h5 class="card-title">Ham Overload</h5>
-                    <p class="card-text">Stock: 2 units</p>
-                    <p class="text-danger">⚠️ Low Stock Alert!</p>
-                </div>
-            </div>
-        </div>
+            <?php endwhile; ?>
+        <?php else: ?>
+            <p class="text-center">No low stock products at the moment.</p>
+        <?php endif; ?>
     </div>
 </div>
 
 
     <!-- Top Selling Products Section -->
-    <div class="container top-products-container">
-        <h2>Top Selling Products</h2>
-        <div class="row">
-            <div class="col-md-4">
-                <div class="product-card">
-                    <img src="./img/menu 1.jpg" alt="Product 1" class="product-image">
-                    <div class="product-details">
-                        <h5 class="product-title">Mini Snackbox</h5>
-                        <p class="product-sales">Sold: 120 units</p>
+    <div class="container top-products-container mt-5">
+    <h2>Top Selling Products</h2>
+    <div class="row">
+        <?php if ($topSellingResult->num_rows > 0): ?>
+            <?php while ($row = $topSellingResult->fetch_assoc()): ?>
+                <div class="col-md-4">
+                    <div class="product-card">
+                        <img src="<?php echo $row['image_url']; ?>" alt="<?php echo $row['product_name']; ?>" class="product-image">
+                        <div class="product-details">
+                            <h5 class="product-title"><?php echo $row['product_name']; ?></h5>
+                            <p class="product-sales">Sold: <?php echo $row['total_sold']; ?> units</p>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="col-md-4">
-                <div class="product-card">
-                    <img src="./img/menu 2.jpg" alt="Product 2" class="product-image">
-                    <div class="product-details">
-                        <h5 class="product-title">Spam Overload</h5>
-                        <p class="product-sales">Sold: 100 units</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="product-card">
-                    <img src="./img/menu 3.jpg" alt="Product 3" class="product-image">
-                    <div class="product-details">
-                        <h5 class="product-title">Ham Overload</h5>
-                        <p class="product-sales">Sold: 85 units</p>
-                    </div>
-                </div>
-            </div>
-        </div>
+            <?php endwhile; ?>
+        <?php else: ?>
+            <p class="text-center">No top-selling products to display.</p>
+        <?php endif; ?>
     </div>
+</div>
 
 </body>
 </html>

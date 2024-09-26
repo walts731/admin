@@ -6,16 +6,42 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['order_id']) && isset($
     $orderId = $_POST['order_id'];
     $status = $_POST['status'];
 
+    // Update order status
     $updateQuery = "UPDATE orders SET status = ? WHERE order_id = ?";
     $stmt = $conn->prepare($updateQuery);
     $stmt->bind_param("si", $status, $orderId);
     $stmt->execute();
     $stmt->close();
-    
+
+    // If the order status is "completed", insert the total_price into the sales table
+    if ($status === 'completed') {
+        // Fetch the total_price from the order
+        $orderQuery = "SELECT total_price FROM orders WHERE order_id = ?";
+        $stmt = $conn->prepare($orderQuery);
+        $stmt->bind_param("i", $orderId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $order = $result->fetch_assoc();
+        $stmt->close();
+
+        if ($order) {
+            $totalPrice = $order['total_price'];
+
+            // Insert total_price into the sales table
+            $insertSalesQuery = "INSERT INTO sales (total_price, sale_date) VALUES (?, NOW())";
+            $stmt = $conn->prepare($insertSalesQuery);
+            $stmt->bind_param("d", $totalPrice);
+            $stmt->execute();
+            $stmt->close();
+        }
+    }
+
     // Redirect to orders.php after update
     header("Location: orders.php");
     exit();
 }
+
+
 
 // Handle order deletion
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete_order_id'])) {
