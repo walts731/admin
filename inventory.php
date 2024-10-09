@@ -44,6 +44,8 @@ if (isset($_POST['updateInventory'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inventory Management</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/inventory.css">
+
 </head>
 <body>
     <!-- Navigation Bar -->
@@ -78,7 +80,7 @@ if (isset($_POST['updateInventory'])) {
                                     <div class='input-group'>
                                         <input type='number' name='stock' class='form-control' placeholder='Stock Quantity' value='" . htmlspecialchars($row['stock']) . "' required>
                                         <input type='number' step='0.01' name='cost' class='form-control' placeholder='Cost' value='" . htmlspecialchars($row['cost']) . "' required>
-                                        <button type='submit' name='updateInventory' class='btn btn-warning'>Update Inventory</button>
+                                        <button type='submit' name='updateInventory' class='btn btn-inventory'>Update Inventory</button>
                                     </div>
                                 </form>
                             </td>

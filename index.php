@@ -46,6 +46,9 @@ $topSellingResult = $conn->query($topSellingSql);
     <title>DELIDAZE Admin Dashboard</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="css/admin_style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cutive+Mono&family=Kanit:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
 </head>
 <body>
 
@@ -69,119 +72,206 @@ $topSellingResult = $conn->query($topSellingSql);
 <!-- Navigation Bar -->
 <?php include ('include/nav.php') ?>
 
-<!-- Dashboard Summary -->
+<!-- Dashboard Summary and Section Buttons in Two Columns -->
 <div class="container mt-4">
     <div class="row">
-        <div class="col-md-3">
-            <div class="card text-center">
-                <div class="card-body">
-                    <h5 class="card-title">Total Products</h5>
-                    <p class="card-text"><?php echo $totalProducts; ?></p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card text-center">
-                <div class="card-body">
-                    <h5 class="card-title">Total Orders</h5>
-                    <p class="card-text"><?php echo $totalOrders; ?></p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card text-center">
-                <div class="card-body">
-                    <h5 class="card-title">Pending Orders</h5>
-                    <p class="card-text"><?php echo $pendingOrders; ?></p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card text-center">
-                <div class="card-body">
-                    <h5 class="card-title">Sales Summary</h5>
-                    <p class="card-text">₱<?php echo number_format($salesSummary, 2); ?></p>
-                </div>
-            </div>
-        </div>
-        <!-- Dynamic Total Revenue Card -->
-        <div class="col-md-3 mt-3">
-            <div class="card text-center">
-                <div class="card-body">
-                    <h5 class="card-title">Total Revenue</h5>
-                    <p class="card-text">₱<?php echo number_format($totalRevenue, 2); ?></p>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Section Buttons -->
-<div class="container mt-5">
-    <h2>Manage Sections</h2>
-    <div class="row">
-        <div class="col-md-3">
-            <a href="products.php" class="btn btn-custom btn-products">Manage Products</a>
-        </div>
-        <div class="col-md-3">
-            <a href="orders.php" class="btn btn-custom btn-orders">Manage Orders</a>
-        </div>
-        <div class="col-md-3">
-            <a href="inventory.php" class="btn btn-custom btn-inventory">Manage Inventory</a>
-        </div>
-        <div class="col-md-3">
-            <a href="users.php" class="btn btn-custom btn-users">Manage Users</a>
-        </div>
-        <div class="col-md-3 mt-3">
-            <a href="analytics.php" class="btn btn-custom btn-analytics">View Analytics</a>
-        </div>
-    </div>
-</div>
-
-<!-- Dynamic Low Stock Alert Section -->
-<div class="container mt-5">
-    <h2>Low Stock Alerts</h2>
-    <div class="row">
-        <?php if ($lowStockResult->num_rows > 0): ?>
-            <?php while ($row = $lowStockResult->fetch_assoc()): ?>
-                <div class="col-md-4">
-                    <div class="card text-center">
+        <!-- Dashboard Summary Column -->
+        <div class="col-md-4 dashboard-body">
+            <h2>Dashboard Summary</h2>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card text-center rounded-pill dashboard-summary">
                         <div class="card-body">
-                            <h5 class="card-title"><?php echo $row['product_name']; ?></h5>
-                            <p class="card-text">Stock: <?php echo $row['stock']; ?> units</p>
-                            <p class="text-danger">⚠️ Low Stock Alert!</p>
+                            <h5 class="card-title rounded-pill dashboard-summary">Total Products</h5>
+                            <p class="card-text"><?php echo $totalProducts; ?></p>
                         </div>
                     </div>
                 </div>
-            <?php endwhile; ?>
-        <?php else: ?>
-            <p class="text-center">No low stock products at the moment.</p>
-        <?php endif; ?>
+                <div class="col-md-12">
+                    <div class="card text-center mt-3 rounded-pill dashboard-summary">
+                        <div class="card-body">
+                            <h5 class="card-title dashboard-summary">Total Orders</h5>
+                            <p class="card-text"><?php echo $totalOrders; ?></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <div class="card text-center mt-3 rounded-pill dashboard-summary">
+                        <div class="card-body">
+                            <h5 class="card-title dashboard-summary">Pending Orders</h5>
+                            <p class="card-text"><?php echo $pendingOrders; ?></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <div class="card text-center mt-3 rounded-pill dashboard-summary">
+                        <div class="card-body">
+                            <h5 class="card-title dashboard-summary">Sales Summary</h5>
+                            <p class="card-text">₱<?php echo number_format($salesSummary, 2); ?></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <div class="card text-center mt-3 rounded-pill dashboard-summary">
+                        <div class="card-body">
+                            <h5 class="card-title dashboard-summary">Total Revenue</h5>
+                            <p class="card-text">₱<?php echo number_format($totalRevenue, 2); ?></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section Buttons Column -->
+        <div class="col-md-4">
+            <h2>Manage Sections</h2>
+            <div class="row">
+                <div class="col-md-12">
+                    <a href="products.php" class="btn btn-custom rounded-pill btn-products w-100 mb-3">Manage Products</a>
+                </div>
+                <div class="col-md-12">
+                    <a href="orders.php" class="btn btn-custom rounded-pill btn-orders w-100 mb-3">Manage Orders</a>
+                </div>
+                <div class="col-md-12">
+                    <a href="inventory.php" class="btn btn-custom rounded-pill btn-inventory w-100 mb-3">Manage Inventory</a>
+                </div>
+                <div class="col-md-12">
+                    <a href="users.php" class="btn btn-custom rounded-pill btn-users w-100 mb-3">Manage Users</a>
+                </div>
+                <div class="col-md-12">
+                    <a href="analytics.php" class="btn btn-custom rounded-pill btn-analytics w-100 mb-3">View Analytics</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dynamic Low Stock Alert Section -->
+<div class="col-md-4">
+    <h2>Low Stock Alerts</h2>
+    <div id="lowStockCarousel" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-inner">
+            <?php if ($lowStockResult->num_rows > 0): ?>
+                <?php $first = true; ?>
+                <?php while ($row = $lowStockResult->fetch_assoc()): ?>
+                    <div class="carousel-item <?php if ($first) { echo 'active'; $first = false; } ?>">
+                        <div class="card text-center rounded-pill dashboard-summary">
+                            <div class="card-body">
+                                <h5 class="card-title"><?php echo $row['product_name']; ?></h5>
+                                <p class="card-text">Stock: <?php echo $row['stock']; ?> units</p>
+                                <p class="text-danger">⚠️ Low Stock Alert!</p>
+                            </div>
+                        </div>
+                    </div>
+                <?php endwhile; ?>
+            <?php else: ?>
+                <div class="carousel-item active">
+                    <div class="card text-center dashboard-summary">
+                        <div class="card-body">
+                            <p class="text-center">No low stock products at the moment.</p>
+                        </div>
+                    </div>
+                </div>
+            <?php endif; ?>
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#lowStockCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#lowStockCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+        </button>
+    </div>
+</div>
+
     </div>
 </div>
 
 
-    <!-- Top Selling Products Section -->
-    <div class="container top-products-container mt-5">
+
+
+
+
+    <!-- Carousel Container -->
+<div class="container mt-5">
     <h2>Top Selling Products</h2>
-    <div class="row">
-        <?php if ($topSellingResult->num_rows > 0): ?>
-            <?php while ($row = $topSellingResult->fetch_assoc()): ?>
-                <div class="col-md-4">
-                    <div class="product-card">
-                        <img src="<?php echo $row['image_url']; ?>" alt="<?php echo $row['product_name']; ?>" class="product-image">
-                        <div class="product-details">
-                            <h5 class="product-title"><?php echo $row['product_name']; ?></h5>
-                            <p class="product-sales">Sold: <?php echo $row['total_sold']; ?> units</p>
+    <div class="carousel">
+        <div class="carousel-wrapper">
+            <?php if ($topSellingResult->num_rows > 0): ?>
+                <?php while ($row = $topSellingResult->fetch_assoc()): ?>
+                    <div class="carousel-card">
+                        <div class="product-card">
+                            <img src="<?php echo $row['image_url']; ?>" alt="<?php echo $row['product_name']; ?>" class="product-image">
+                            <div class="product-details">
+                                <h5 class="product-title"><?php echo $row['product_name']; ?></h5>
+                                <p class="product-sales">Sold: <?php echo $row['total_sold']; ?> units</p>
+                            </div>
                         </div>
                     </div>
+                <?php endwhile; ?>
+            <?php else: ?>
+                <div class="carousel-card">
+                    <div class="product-card">
+                        <p class="text-center">No top-selling products to display.</p>
+                    </div>
                 </div>
-            <?php endwhile; ?>
-        <?php else: ?>
-            <p class="text-center">No top-selling products to display.</p>
-        <?php endif; ?>
+            <?php endif; ?>
+        </div>
+        <button class="carousel-btn left" onclick="swipeLeft()">&#10094;</button>
+        <button class="carousel-btn right" onclick="swipeRight()">&#10095;</button>
     </div>
 </div>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
 
 </body>
 </html>
+
+<script>
+    let currentIndex = 0;
+    const cards = document.querySelectorAll('.carousel-card');
+    const totalCards = cards.length;
+    const wrapper = document.querySelector('.carousel-wrapper');
+
+    function showCards(index) {
+        const cardsToShow = 3; // Number of cards to show
+        const maxIndex = Math.ceil(totalCards / cardsToShow) - 1;
+        wrapper.style.transform = `translateX(-${index * (100 / cardsToShow)}%)`;
+    }
+
+    function swipeLeft() {
+        currentIndex = (currentIndex > 0) ? currentIndex - 1 : Math.ceil(totalCards / 3) - 1;
+        showCards(currentIndex);
+    }
+
+    function swipeRight() {
+        currentIndex = (currentIndex < Math.ceil(totalCards / 3) - 1) ? currentIndex + 1 : 0;
+        showCards(currentIndex);
+    }
+</script>
+
+<script>
+    function createLeaf() {
+        const leaf = document.createElement('div');
+        leaf.classList.add('leaf');
+        
+        // Random horizontal starting position
+        leaf.style.left = `${Math.random() * 100}vw`;
+
+        // Random animation duration
+        const fallDuration = Math.random() * 5 + 5; // 5 to 10 seconds
+        leaf.style.animationDuration = `${fallDuration}s`;
+
+        document.body.appendChild(leaf);
+
+        // Remove the leaf after it falls
+        setTimeout(() => {
+            leaf.remove();
+        }, fallDuration * 1000);
+    }
+
+    // Generate leaves every 1 second
+    setInterval(createLeaf, 1000);
+</script>

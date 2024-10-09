@@ -70,7 +70,7 @@ background-color: #FCFFF5;
     padding: 12px;
     border: none;
     border-radius: 5px;
-    background-color: #ff9900;
+    background-color: #21443E;
     color: white;
     font-size: 16px;
     cursor: pointer;
@@ -78,7 +78,7 @@ background-color: #FCFFF5;
 }
 
 .login-btn:hover {
-    background-color: #e68a00;
+    background-color: #85AF97;
 }
 
 .admin-msg {

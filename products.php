@@ -47,7 +47,7 @@ if (isset($_POST['addProduct'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Products Management</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="css/product_style.css">
+    <link rel="stylesheet" href="css/product.css">
 </head>
 
 <body>
@@ -147,8 +147,8 @@ if (isset($_POST['addProduct'])) {
                                     <td>⭐⭐⭐⭐</td> <!-- Assuming a static 4-star rating for now -->
                                     <td>$availability</td>
                                     <td>
-                                        <a href='edit_product.php?id=" . $row['product_id'] . "' class='btn btn-primary btn-custom me-2'>Edit</a>
-                                        <a href='delete_product.php?id=" . $row['product_id'] . "' class='btn btn-danger btn-custom'>Delete</a>
+                                        <a href='edit_product.php?id=" . $row['product_id'] . "' class='btn btn-edit rounded-pill btn-custom me-2'>Edit</a>
+                                        <a href='delete_product.php?id=" . $row['product_id'] . "' class='btn btn-delete rounded-pill btn-custom '>Delete</a>
                                     </td>
                                 </tr>";
                             }

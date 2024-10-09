@@ -1,10 +1,10 @@
 
 body {
-    background-color: #347928;
-    border: none;
-    font-family: Arial, sans-serif;
-}
-
+    background-color: #FCFFF5;
+        font-family: "Poppins", sans-serif;
+        font-weight: 500;
+        font-style: normal;
+    }
 
 /* Custom Button Styles */
 .btn-custom {
@@ -16,30 +16,31 @@ body {
 }
 .btn-custom:hover {
     transform: scale(1.05);
-    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
+    box-shadow: 0px 4px 12px #cce7c9;
 }
+
 .btn-products {
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    background: #276221;
     border: none;
     color: white;
 }
 .btn-orders {
-    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    background: #276221;
     border: none;
     color: white;
 }
 .btn-inventory {
-    background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+    background: #276221;
     border: none;
     color: white;
 }
 .btn-users {
-    background: linear-gradient(135deg, #5ee7df 0%, #b490ca 100%);
+    background: #276221;
     border: none;
     color: white;
 }
 .btn-analytics {
-    background: linear-gradient(135deg, #c1dfc4 0%, #deecdd 100%);
+    background: #276221;
     border: none;
     color: white;
 }
@@ -67,4 +68,96 @@ body {
 }
 .product-sales {
     color: #888;
+}
+
+.dashboard-summary {
+    background-color: #276221;
+    padding: 10px;
+    border-radius: 8px;
+    color: white;
+    border: none;
+    font-weight: bold;
+    font-size: 18px;
+    
+}
+
+.carousel {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+}
+
+.carousel-wrapper {
+    display: flex;
+    transition: transform 0.3s ease;
+}
+
+.carousel-card {
+    flex: 0 0 33.33%; /* Show 3 cards at once */
+    box-sizing: border-box;
+    padding: 10px; /* Optional spacing around cards */
+}
+
+.product-card {
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 10px;
+    text-align: center;
+}
+
+.product-image {
+    max-width: 100%;
+    height: auto;
+}
+
+.carousel-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgba(255, 255, 255, 0.8);
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    z-index: 1000;
+}
+
+.carousel-btn.left {
+    left: 10px;
+}
+
+.carousel-btn.right {
+    right: 10px;
+}
+
+.navbar{
+    background-color: #75975e;
+}
+
+
+/* Leaf Styles */
+.leaf {
+    position: absolute;
+    top: -100px;
+    z-index: 999;
+    pointer-events: none;
+    width: 50px;
+    height: 50px;
+    background-image: url('leaf.png'); /* Replace with your leaf image */
+    background-size: cover;
+    opacity: 0.8;
+    animation: fall linear infinite;
+}
+
+@keyframes fall {
+    0% {
+        transform: translateX(0) rotate(0deg);
+        opacity: 0;
+    }
+    10% {
+        opacity: 1;
+    }
+    100% {
+        transform: translateX(100px) translateY(100vh) rotate(360deg);
+        opacity: 0.8;
+    }
 }
