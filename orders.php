@@ -13,10 +13,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['order_id']) && isset($
     $stmt->execute();
     $stmt->close();
 
-    // If the order status is "completed", insert the total_price into the sales table
+    // If the order status is "completed", move the order to orders_history and delete it from orders
     if ($status === 'completed') {
-        // Fetch the total_price from the order
-        $orderQuery = "SELECT total_price FROM orders WHERE order_id = ?";
+        // Fetch the order details from orders table
+        $orderQuery = "SELECT * FROM orders WHERE order_id = ?";
         $stmt = $conn->prepare($orderQuery);
         $stmt->bind_param("i", $orderId);
         $stmt->execute();
@@ -25,25 +25,57 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['order_id']) && isset($
         $stmt->close();
 
         if ($order) {
-            $totalPrice = $order['total_price'];
+            // Fetch the order items for this order
+            $itemsQuery = "SELECT order_item_id, product_id, quantity, price FROM order_items WHERE order_id = ?";
+            $stmt = $conn->prepare($itemsQuery);
+            $stmt->bind_param("i", $orderId);
+            $stmt->execute();
+            $itemsResult = $stmt->get_result();
 
-            // Insert total_price into the sales table
-            $insertSalesQuery = "INSERT INTO sales (total_price, sale_date) VALUES (?, NOW())";
-            $stmt = $conn->prepare($insertSalesQuery);
-            $stmt->bind_param("d", $totalPrice);
+            // Prepare to insert into orders_history
+            $insertHistoryQuery = "INSERT INTO orders_history (order_id, user_id, total_price, status, order_date, order_item_id, product_id, quantity, price) 
+                                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            
+            // Loop through each item and insert it into orders_history
+            while ($item = $itemsResult->fetch_assoc()) {
+                $stmt = $conn->prepare($insertHistoryQuery);
+                $stmt->bind_param("iissiiidd", 
+                    $order['order_id'], 
+                    $order['user_id'], 
+                    $order['total_price'], 
+                    $order['status'], 
+                    $order['order_date'], 
+                    $item['order_item_id'], 
+                    $item['product_id'], 
+                    $item['quantity'], 
+                    $item['price']
+                );
+                $stmt->execute();
+            }
+            $stmt->close();
+
+            // Delete associated order items from order_items table
+            $deleteItemsQuery = "DELETE FROM order_items WHERE order_id = ?";
+            $stmt = $conn->prepare($deleteItemsQuery);
+            $stmt->bind_param("i", $orderId);
+            $stmt->execute();
+            $stmt->close();
+
+            // Delete the order from orders table
+            $deleteOrderQuery = "DELETE FROM orders WHERE order_id = ?";
+            $stmt = $conn->prepare($deleteOrderQuery);
+            $stmt->bind_param("i", $orderId);
             $stmt->execute();
             $stmt->close();
         }
-    }
 
-    // Redirect to orders.php after update
-    header("Location: orders.php");
-    exit();
+        // Redirect to orders.php after update
+        header("Location: orders.php");
+        exit();
+    }
 }
 
-
-
-// Handle order deletion
+// Handle order deletion (without completion)
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete_order_id'])) {
     $deleteOrderId = $_POST['delete_order_id'];
 
@@ -60,7 +92,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete_order_id'])) {
     $stmt->bind_param("i", $deleteOrderId);
     $stmt->execute();
     $stmt->close();
-    
+
     // Redirect to orders.php after deletion
     header("Location: orders.php");
     exit();
@@ -100,7 +132,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete_order_id'])) {
                     SELECT o.order_id, o.user_id, o.total_price, o.status, o.order_date, 
                            u.username, 
                            oi.order_item_id, oi.product_id, oi.quantity, oi.price, 
-                           p.product_name, p.product_description 
+                           p.product_name 
                     FROM orders o
                     LEFT JOIN order_items oi ON o.order_id = oi.order_id
                     LEFT JOIN users u ON o.user_id = u.user_id
@@ -111,10 +143,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete_order_id'])) {
 
                 while ($order = mysqli_fetch_assoc($result)) {
                     $orders[$order['order_id']]['details'] = $order;
+                    if (!isset($orders[$order['order_id']]['items'])) {
+                        $orders[$order['order_id']]['items'] = [];
+                    }
                     if ($order['order_item_id']) {
                         $orders[$order['order_id']]['items'][] = $order;
-                    } else {
-                        $orders[$order['order_id']]['items'] = [];
                     }
                 }
 
@@ -125,11 +158,34 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete_order_id'])) {
                     <td><?= htmlspecialchars($order['details']['username']) ?></td>
                     <td><?= htmlspecialchars($order['details']['order_date']) ?></td>
                     <td>
-                        <?php foreach ($order['items'] as $item): ?>
-                            <strong><?= htmlspecialchars($item['product_name']) ?></strong> (<?= $item['quantity'] ?>) - 
-                            <em><?= htmlspecialchars($item['product_description']) ?></em> - 
-                            Price: <?= htmlspecialchars($item['price']) ?><br>
-                        <?php endforeach; ?>
+                        <button class="btn btn-link" data-bs-toggle="modal" data-bs-target="#orderItemsModal<?= $orderId ?>">
+                            View Items <i class="bi bi-eye"></i>
+                        </button>
+
+                        <!-- Modal for displaying order items -->
+                        <div class="modal fade" id="orderItemsModal<?= $orderId ?>" tabindex="-1" aria-labelledby="orderItemsModalLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="orderItemsModalLabel">Order Items for Order #<?= $order['details']['order_id'] ?></h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <ul class="list-group">
+                                            <?php foreach ($order['items'] as $item): ?>
+                                                <li class="list-group-item">
+                                                    <strong><?= htmlspecialchars($item['product_name']) ?></strong> (<?= $item['quantity'] ?>) - 
+                                                    Price: <?= htmlspecialchars($item['price']) ?>
+                                                </li>
+                                            <?php endforeach; ?>
+                                        </ul>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </td>
                     <td><span class="badge bg-warning"><?= htmlspecialchars($order['details']['status']) ?></span></td>
                     <td>
@@ -154,5 +210,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete_order_id'])) {
         </table>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
 </body>
 </html>

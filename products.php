@@ -4,7 +4,6 @@
 if (isset($_POST['addProduct'])) {
     $productName = $_POST['productName'];
     $productDescription = $_POST['productDescription'];
-    $productStock = $_POST['productStock'];
     $productPrice = $_POST['productPrice'];
     $productImage = $_FILES['productImage']['name'];
 
@@ -14,8 +13,8 @@ if (isset($_POST['addProduct'])) {
     move_uploaded_file($_FILES['productImage']['tmp_name'], $target_file);
 
     // Insert into products table
-    $sql = "INSERT INTO products (product_name, product_description, stock, price, image_url)
-            VALUES ('$productName', '$productDescription', '$productStock', '$productPrice', '$target_file')";
+    $sql = "INSERT INTO products (product_name, product_description, price, image_url)
+            VALUES ('$productName', '$productDescription', '$productPrice', '$target_file')";
 
     if ($conn->query($sql) === TRUE) {
         $productId = $conn->insert_id; // Get the last inserted product_id
@@ -84,12 +83,6 @@ if (isset($_POST['addProduct'])) {
                         <textarea class="form-control" id="productDescription" name="productDescription" rows="3" placeholder="Enter product description" required></textarea>
                     </div>
 
-                    <!-- Product Stock -->
-                    <div class="mb-3">
-                        <label for="productStock" class="form-label">Stock</label>
-                        <input type="number" class="form-control" id="productStock" name="productStock" placeholder="Enter available stock" required>
-                    </div>
-
                     <!-- Product Price -->
                     <div class="mb-3">
                         <label for="productPrice" class="form-label">Price</label>
@@ -129,38 +122,38 @@ if (isset($_POST['addProduct'])) {
                         </tr>
                     </thead>
                     <tbody>
-                        <?php
-                        // Fetch products from the database
-                        $sql = "SELECT * FROM products";
-                        $result = $conn->query($sql);
+    <?php
+    // Fetch products and stock from the database using JOIN between products and inventory tables
+    $sql = "SELECT p.*, i.stock FROM products p 
+            LEFT JOIN inventory i ON p.product_id = i.product_id";
+    $result = $conn->query($sql);
 
-                        if ($result->num_rows > 0) {
-                            // Output data for each product
-                            while ($row = $result->fetch_assoc()) {
-                                // Determine availability badge color
-                                $availability = ($row['stock'] > 0) ? '<span class="badge bg-success">In Stock</span>' : '<span class="badge bg-danger">Out of Stock</span>';
-                        
-                                echo "<tr>
-                                    <td><img src='" . $row['image_url'] . "' alt='" . $row['product_name'] . "' width='80' class='img-fluid'></td>
-                                    <td>" . $row['product_name'] . "</td>
-                                    <td>₱" . number_format($row['price'], 2) . "</td>
-                                    <td>⭐⭐⭐⭐</td> <!-- Assuming a static 4-star rating for now -->
-                                    <td>$availability</td>
-                                    <td>
-                                        <a href='edit_product.php?id=" . $row['product_id'] . "' class='btn btn-edit rounded-pill btn-custom me-2'>Edit</a>
-                                        <a href='delete_product.php?id=" . $row['product_id'] . "' class='btn btn-delete rounded-pill btn-custom '>Delete</a>
-                                    </td>
-                                </tr>";
-                            }
-                        } else {
-                            echo "<tr><td colspan='6'>No products available</td></tr>";
-                        }
-                        
-                        
+    if ($result->num_rows > 0) {
+        // Output data for each product
+        while ($row = $result->fetch_assoc()) {
+            // Determine availability badge color based on stock from the inventory table
+            $availability = ($row['stock'] > 0) ? '<span class="badge bg-success">In Stock</span>' : '<span class="badge bg-danger">Out of Stock</span>';
 
-                        $conn->close(); // Close the database connection
-                        ?>
-                    </tbody>
+            echo "<tr>
+                <td><img src='" . $row['image_url'] . "' alt='" . $row['product_name'] . "' width='80' class='img-fluid'></td>
+                <td>" . $row['product_name'] . "</td>
+                <td>₱" . number_format($row['price'], 2) . "</td>
+                <td>⭐⭐⭐⭐</td> <!-- Assuming a static 4-star rating for now -->
+                <td>$availability</td>
+                <td>
+                    <a href='edit_product.php?id=" . $row['product_id'] . "' class='btn btn-edit rounded-pill btn-custom me-2'>Edit</a>
+                    <a href='delete_product.php?id=" . $row['product_id'] . "' class='btn btn-delete rounded-pill btn-custom '>Delete</a>
+                </td>
+            </tr>";
+        }
+    } else {
+        echo "<tr><td colspan='6'>No products available</td></tr>";
+    }
+
+    $conn->close(); // Close the database connection
+    ?>
+</tbody>
+
                 </table>
             </div>
         </div>

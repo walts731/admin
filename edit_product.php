@@ -44,10 +44,6 @@ if (isset($_GET['id'])) {
                 <textarea class="form-control" id="productDescription" name="productDescription" rows="3" required><?php echo $product['product_description']; ?></textarea>
             </div>
             <div class="mb-3">
-                <label for="productStock" class="form-label">Stock</label>
-                <input type="number" class="form-control" id="productStock" name="productStock" value="<?php echo $product['stock']; ?>" required>
-            </div>
-            <div class="mb-3">
                 <label for="productPrice" class="form-label">Price</label>
                 <input type="text" class="form-control" id="productPrice" name="productPrice" value="<?php echo $product['price']; ?>" required>
             </div>
@@ -55,7 +51,9 @@ if (isset($_GET['id'])) {
                 <label for="productImage" class="form-label">Image</label>
                 <input type="file" class="form-control" id="productImage" name="productImage">
             </div>
-            <button type="submit" name="updateProduct" class="btn btn-primary">Update Product</button>
+            <button type="submit" name="updateProduct" class="btn rounded-pill" style="background-color: #85AF97; color: white; border: none; cursor: pointer;" 
+onmouseover="this.style.backgroundColor='#6E947E'" 
+onmouseout="this.style.backgroundColor='#85AF97'">Update Product</button>
         </form>
     </div>
 
@@ -68,7 +66,6 @@ if (isset($_POST['updateProduct'])) {
     $productId = $_POST['productId'];
     $productName = $_POST['productName'];
     $productDescription = $_POST['productDescription'];
-    $productStock = $_POST['productStock'];
     $productPrice = $_POST['productPrice'];
 
     // Optional: Handle image upload if a new image is provided
@@ -76,9 +73,9 @@ if (isset($_POST['updateProduct'])) {
         $image = $_FILES['productImage']['name'];
         $target = "img/" . basename($image);
         move_uploaded_file($_FILES['productImage']['tmp_name'], $target);
-        $sql = "UPDATE products SET product_name='$productName', product_description='$productDescription', stock='$productStock', price='$productPrice', image_url='$target' WHERE product_id='$productId'";
+        $sql = "UPDATE products SET product_name='$productName', product_description='$productDescription', price='$productPrice', image_url='$target' WHERE product_id='$productId'";
     } else {
-        $sql = "UPDATE products SET product_name='$productName', product_description='$productDescription', stock='$productStock', price='$productPrice' WHERE product_id='$productId'";
+        $sql = "UPDATE products SET product_name='$productName', product_description='$productDescription', price='$productPrice' WHERE product_id='$productId'";
     }
 
     if ($conn->query($sql) === TRUE) {
