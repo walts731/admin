@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css">
     <style>
         body {
-            background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
+            background: #D6EFD8; /* Set the background color to #FFFFE0 */
             color: #333;
             font-family: Arial, sans-serif;
         }
@@ -28,10 +28,10 @@
             width: 100%;
             height: 400px;
         }
-        /* Style for the smaller customer acquisition chart */
-        .small-chart {
-            width: 100px; /* Adjust width as needed */
-            height: 100px; /* Adjust height as needed */
+        /* Style for the bar chart */
+        .bar-chart {
+            width: 100%; /* Adjust width as needed */
+            height: 400px; /* Adjust height as needed */
         }
     </style>
 </head>
@@ -63,10 +63,10 @@
             <canvas id="salesChart" class="chart"></canvas>
         </div>
 
-        <!-- Customer Acquisition Chart (Smaller) -->
+        <!-- Customer Acquisition Chart (Bar Graph) -->
         <div class="chart-container">
             <h2 class="chart-title">Customer Acquisition</h2>
-            <canvas id="customerChart" class="chart small-chart"></canvas> 
+            <canvas id="customerChart" class="bar-chart"></canvas> 
         </div>
 
 
@@ -179,7 +179,7 @@ const salesChart = new Chart(salesCtx, {
         datasets: [{
             label: 'Sales (₱)',
             data: salesData, // Dynamically set sales data
-            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            backgroundColor: 'rgba(0, 128, 0, 0.2)',
             borderColor: 'rgba(75, 192, 192, 1)',
             borderWidth: 1,
         }]
@@ -207,10 +207,10 @@ const salesChart = new Chart(salesCtx, {
         const newCustomers = <?php echo json_encode($newCustomers); ?>;
         const returningCustomers = <?php echo json_encode($returningCustomers); ?>;
 
-        // Customer Acquisition Chart
+        // Customer Acquisition Chart (Bar Graph)
         const customerCtx = document.getElementById('customerChart').getContext('2d');
         const customerChart = new Chart(customerCtx, {
-            type: 'doughnut',
+            type: 'bar',
             data: {
                 labels: ['New Customers', 'Returning Customers'],
                 datasets: [{
@@ -227,6 +227,23 @@ const salesChart = new Chart(salesCtx, {
 
                     borderWidth: 1
                 }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Number of Customers'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Customer Type'
+                        }
+                    }
+                }
             }
         });
 

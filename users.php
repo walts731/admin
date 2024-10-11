@@ -7,55 +7,57 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Management</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/users.css">
 </head>
 <body>
     <!-- Navigation Bar -->
     <?php include ('include/nav.php')?> 
 
     <div class="container mt-5">
-        <h2>User Management</h2>
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>User ID</th>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Role</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php
-                
-                // Fetch users
-                $sql = "SELECT user_id, username, email, role, status FROM users";
-                $result = $conn->query($sql);
-                
-                if ($result->num_rows > 0) {
-                    while ($row = $result->fetch_assoc()) {
-                        echo "<tr>
-                            <td>{$row['user_id']}</td>
-                            <td>{$row['username']}</td>
-                            <td>{$row['email']}</td>
-                            <td>{$row['role']}</td>
-                            <td>{$row['status']}</td>
-                            <td>
-                                <button class='btn btn-danger btn-sm' data-bs-toggle='modal' data-bs-target='#blockModal' 
-                                        data-userid='{$row['user_id']}' data-username='{$row['username']}' 
-                                        data-status='{$row['status']}'>
-                                        " . ($row['status'] == 'active' ? 'Block' : 'Unblock') . "
-                                </button>
-                            </td>
-                        </tr>";
+        <h2 class="text-center mb-4">User Management</h2>
+        <div class="table-responsive">
+            <table class="table table-hover table-bordered">
+                <thead class="" style="background-color: #508D4E; color: white;">
+                    <tr>
+                        <th scope="col">Name</th>
+                        <th scope="col">Email</th>
+                        <th scope="col">Role</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php
+                    // Fetch users
+                    $sql = "SELECT user_id, username, email, role, status FROM users";
+                    $result = $conn->query($sql);
+
+                    if ($result->num_rows > 0) {
+                        while ($row = $result->fetch_assoc()) {
+                            echo "<tr>
+                                <td>{$row['username']}</td>
+                                <td>{$row['email']}</td>
+                                <td>{$row['role']}</td>
+                                <td>
+                                    <span class='badge ".($row['status'] == 'active' ? 'bg-success' : 'bg-danger')."'>{$row['status']}</span>
+                                </td>
+                                <td>
+                                    <button class='btn btn-outline-danger rounded-pill btn-sm' data-bs-toggle='modal' data-bs-target='#blockModal' 
+                                            data-userid='{$row['user_id']}' data-username='{$row['username']}' 
+                                            data-status='{$row['status']}'>
+                                            " . ($row['status'] == 'active' ? 'Block' : 'Unblock') . "
+                                    </button>
+                                </td>
+                            </tr>";
+                        }
+                    } else {
+                        echo "<tr><td colspan='6'>No users found</td></tr>";
                     }
-                } else {
-                    echo "<tr><td colspan='6'>No users found</td></tr>";
-                }
-                $conn->close();
-                ?>
-            </tbody>
-        </table>
+                    $conn->close();
+                    ?>
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <!-- Modal -->

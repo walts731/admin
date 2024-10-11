@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="css/product.css">
 </head>
 
-<body>
+<body style="background-color: #D6EFD8;">
     <!-- Navigation Bar -->
     <?php include ('include/nav.php'); ?>
 
@@ -18,49 +18,73 @@
         <?php
         include('include/connect.php');
 
-        // SQL query to fetch data from orders_history table
-        $sql = "SELECT `history_id`, `order_id`, `user_id`, `total_price`, `status`, `order_date`, `archived_at`, `order_item_id`, `product_id`, `quantity`, `price` FROM `orders_history`";
+        // SQL query to fetch data from orders_history table, sorted by order_date in descending order (newest first)
+        $sql = "SELECT 
+                    `oh`.`history_id`, 
+                    `oh`.`order_id`, 
+                    `oh`.`user_id`, 
+                    `oh`.`total_price`, 
+                    `oh`.`status`, 
+                    `oh`.`order_date`, 
+                    `oh`.`archived_at`, 
+                    `oh`.`order_item_id`, 
+                    `oh`.`product_id`, 
+                    `oh`.`quantity`, 
+                    `oh`.`price`,
+                    `p`.`product_name` AS `product_name`,
+                    `u`.`username` AS `username` 
+                FROM 
+                    `orders_history` AS `oh`
+                JOIN 
+                    `products` AS `p` ON `oh`.`product_id` = `p`.`product_id`
+                JOIN 
+                    `users` AS `u` ON `oh`.`user_id` = `u`.`user_id`
+                ORDER BY `oh`.`order_date` DESC"; // Added ORDER BY clause
         $result = $conn->query($sql);
 
         // Check if there are results
         if ($result->num_rows > 0) {
             // Output data of each row
-            echo '<table class="table table-striped">';
-            echo '<thead class="table-light">
+            echo '<div class="table-responsive">';
+            echo '<table class="table table-striped table-bordered">';
+            echo '<thead class="" style="background-color: #508D4E; color: white;">
+
                     <tr>
-                        <th>History ID</th>
                         <th>Order ID</th>
-                        <th>User ID</th>
-                        <th>Total Price</th>
+                        <th>Username</th>
                         <th>Status</th>
                         <th>Order Date</th>
                         <th>Archived At</th>
-                        <th>Order Item ID</th>
-                        <th>Product ID</th>
+                        <th>Product Name</th>
                         <th>Quantity</th>
-                        <th>Price</th>
+                        <th>Total Amount</th> 
                     </tr>
                   </thead>';
             echo '<tbody>';
             
             while ($row = $result->fetch_assoc()) {
+                // Format the date using php's date function
+                $order_date = date('M d Y h:ia', strtotime($row["order_date"]));
+                $archived_at = date('M d Y h:ia', strtotime($row["archived_at"]));
+
+                // Calculate the total amount for the product
+                $total_amount = $row["quantity"] * $row["price"]; 
+
                 echo "<tr>
-                        <td>" . $row["history_id"] . "</td>
                         <td>" . $row["order_id"] . "</td>
-                        <td>" . $row["user_id"] . "</td>
-                        <td>" . number_format($row["total_price"], 2) . "</td>
-                        <td>" . $row["status"] . "</td>
-                        <td>" . $row["order_date"] . "</td>
-                        <td>" . $row["archived_at"] . "</td>
-                        <td>" . $row["order_item_id"] . "</td>
-                        <td>" . $row["product_id"] . "</td>
+                        <td>" . $row["username"] . "</td>
+                        <td style='color: green;'>" . $row["status"] . "</td>
+                        <td>" . $order_date . "</td>
+                        <td>" . $archived_at . "</td>
+                        <td>" . $row["product_name"] . "</td>
                         <td>" . $row["quantity"] . "</td>
-                        <td>" . number_format($row["price"], 2) . "</td>
+                        <td>" . number_format($total_amount, 2) . "</td>
                       </tr>";
             }
             
             echo '</tbody>';
             echo '</table>';
+            echo '</div>';
         } else {
             echo '<div class="alert alert-warning" role="alert">No results found.</div>';
         }

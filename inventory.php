@@ -59,51 +59,53 @@ if (isset($_POST['updateInventory'])) {
     <link rel="stylesheet" href="css/inventory.css">
 
 </head>
-<body>
+<body style="background-color: #D6EFD8;">
     <!-- Navigation Bar -->
     <?php include('include/nav.php') ?>
 
     <div class="container mt-5">
-        <h2>Inventory Management</h2>
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Product Name</th>
-                    <th>Current Stock</th>
-                    <th>Cost</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php
-                // Fetch inventory items to display
-                $inventorySql = "SELECT inv.*, p.product_name FROM inventory inv JOIN products p ON inv.product_id = p.product_id";
-                $inventoryResult = $conn->query($inventorySql);
+        <h2 class="text-center mb-4">Inventory Management</h2>
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered">
+                <thead class="" style="background-color: #508D4E; color: white;">
+                    <tr>
+                        <th scope="col">Product Name</th>
+                        <th scope="col">Current Stock</th>
+                        <th scope="col">Cost</th>
+                        <th scope="col" class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php
+                    // Fetch inventory items to display
+                    $inventorySql = "SELECT inv.*, p.product_name FROM inventory inv JOIN products p ON inv.product_id = p.product_id";
+                    $inventoryResult = $conn->query($inventorySql);
 
-                if ($inventoryResult->num_rows > 0) {
-                    while ($row = $inventoryResult->fetch_assoc()) {
-                        echo "<tr>
-                            <td>" . htmlspecialchars($row['product_name']) . "</td>
-                            <td>" . htmlspecialchars($row['stock']) . "</td>
-                            <td>" . htmlspecialchars($row['cost']) . "</td>
-                            <td>
-                                <form method='POST' action=''>
-                                    <input type='hidden' name='productId' value='" . $row['product_id'] . "'>
-                                    <div class='input-group'>
-                                        <input type='number' name='stock' class='form-control' placeholder='Stock Quantity' value='" . htmlspecialchars($row['stock']) . "' required>
-                                        <input type='number' step='0.01' name='cost' class='form-control' placeholder='Cost' value='" . htmlspecialchars($row['cost']) . "' required>
-                                        <button type='submit' name='updateInventory' class='btn btn-inventory'>Update Inventory</button>
-                                    </div>
-                                </form>
-                            </td>
-                        </tr>";
+                    if ($inventoryResult->num_rows > 0) {
+                        while ($row = $inventoryResult->fetch_assoc()) {
+                            echo "<tr>
+                                <td>" . htmlspecialchars($row['product_name']) . "</td>
+                                <td>" . htmlspecialchars($row['stock']) . "</td>
+                                <td>" . htmlspecialchars($row['cost']) . "</td>
+                                <td class='text-center'>
+                                    <form method='POST' action=''>
+                                        <input type='hidden' name='productId' value='" . $row['product_id'] . "'>
+                                        <div class='input-group'>
+                                            <input type='number' name='stock' class='form-control' placeholder='Stock Quantity' value='" . htmlspecialchars($row['stock']) . "' required>
+                                            <input type='number' step='0.01' name='cost' class='form-control' placeholder='Cost' value='" . htmlspecialchars($row['cost']) . "' required>
+                                            <button type='submit' name='updateInventory' class='btn btn-inventory'>Update</button>
+                                        </div>
+                                    </form>
+                                </td>
+                            </tr>";
+                        }
+                    } else {
+                        echo "<tr><td colspan='4'>No inventory items available</td></tr>";
                     }
-                } else {
-                    echo "<tr><td colspan='4'>No inventory items available</td></tr>";
-                }
-                ?>
-            </tbody>
-        </table>
+                    ?>
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>

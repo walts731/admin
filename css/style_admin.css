@@ -1,6 +1,6 @@
 
 body {
-    background-color: #FFFFE0;
+    background-color: #D6EFD8;
         font-family: "Poppins", sans-serif;
         font-weight: 500;
         font-style: normal;
@@ -16,33 +16,40 @@ body {
 }
 .btn-custom:hover {
     transform: scale(1.05);
-    box-shadow: 0px 4px 12px #cce7c9;
+    box-shadow: 0px 4px 12px #1A5319;
+    background-color: #1A5319;
+    color: white;
 }
 
 .btn-products {
-    background: #276221;
+    background: #FEFAE0;
     border: none;
-    color: white;
+    color: #1A5319;
+    box-shadow: 0px 4px 12px #1A5319;
 }
 .btn-orders {
-    background: #276221;
+    background: #FEFAE0;
     border: none;
-    color: white;
+    color: #1A5319;
+    box-shadow: 0px 4px 12px #1A5319;
 }
 .btn-inventory {
-    background: #276221;
+    background: #FEFAE0;
     border: none;
-    color: white;
+    color: #1A5319;
+    box-shadow: 0px 4px 12px #1A5319;
 }
 .btn-users {
-    background: #276221;
+    background: #FEFAE0;
     border: none;
-    color: white;
+    color: #1A5319;
+    box-shadow: 0px 4px 12px #1A5319;
 }
 .btn-analytics {
-    background: #276221;
+    background: #FEFAE0;
     border: none;
-    color: white;
+    color: #1A5319;
+    box-shadow: 0px 4px 12px #1A5319;
 }
 /* Styles for Top Selling Products */
 .top-products-container {
@@ -71,14 +78,14 @@ body {
 }
 
 .dashboard-summary {
-    background-color: #276221;
+    background-color: #FEFAE0;
     padding: 10px;
     border-radius: 8px;
     color: white;
     border: none;
     font-weight: bold;
     font-size: 18px;
-    
+    color: #1A5319;
 }
 
 .carousel {
@@ -99,14 +106,15 @@ body {
 }
 
 .product-card {
-    border: 1px solid #ddd;
+    border: 1px solid #FEFAE0;
     border-radius: 5px;
     padding: 10px;
     text-align: center;
+    background-color: #FEFAE0;
 }
 
 .product-image {
-    max-width: 100%;
+    max-width: 85%;
     height: auto;
 }
 

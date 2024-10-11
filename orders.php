@@ -123,13 +123,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete_order_id'])) {
         <table class="table table-striped">
             <thead>
                 <tr>
-                    <th>Order ID</th>
-                    <th>User ID</th>
-                    <th>Username</th>
-                    <th>Order Date</th>
-                    <th>Items</th>
-                    <th>Status</th>
-                    <th>Actions</th>
+                    <th scope="col">Order ID</th>
+                    <th scope="col">User ID</th>
+                    <th scope="col">Username</th>
+                    <th scope="col">Order Date</th>
+                    <th scope="col">Items</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Actions</th>
                 </tr>
             </thead>
             <tbody>

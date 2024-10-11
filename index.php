@@ -5,9 +5,7 @@ include ('include/connect.php');
 $totalProducts = $conn->query("SELECT COUNT(*) as total FROM products")->fetch_assoc()['total'];
 $totalOrders = $conn->query("SELECT COUNT(*) as total FROM orders")->fetch_assoc()['total'];
 $pendingOrders = $conn->query("SELECT COUNT(*) as pending FROM orders WHERE status='pending'")->fetch_assoc()['pending'];
-$salesSummary = $conn->query("SELECT SUM(total_price) as total_sales FROM orders WHERE status='completed'")->fetch_assoc()['total_sales'];
-
-// Calculate total revenue dynamically
+$salesSummary = $conn->query("SELECT SUM(total_price) as total_sales FROM orders_history WHERE status='completed'")->fetch_assoc()['total_sales']; // Fetched from orders_history
 $revenueSql = "
     SELECT SUM(p.price - i.cost) AS total_revenue 
     FROM products p 
@@ -22,7 +20,7 @@ $lowStockSql = "
     SELECT i.product_id, p.product_name, i.stock 
     FROM inventory i 
     JOIN products p ON i.product_id = p.product_id 
-    WHERE i.stock < 5"; // Adjust threshold as needed
+    WHERE i.stock <= 5"; // Adjust threshold as needed
 
 $lowStockResult = $conn->query($lowStockSql);
 
@@ -32,10 +30,12 @@ $topSellingSql = "
     JOIN products p ON oh.product_id = p.product_id
     WHERE oh.status = 'completed'
     GROUP BY oh.product_id
+    HAVING SUM(oh.quantity) >= 5 
     ORDER BY total_sold DESC
-    LIMIT 3"; // Adjust the limit to show more top-selling products
+    "; // Adjust the limit to show more top-selling products
 
 $topSellingResult = $conn->query($topSellingSql);
+
 
 
 ?>
@@ -47,7 +47,7 @@ $topSellingResult = $conn->query($topSellingSql);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DELIDAZE Admin Dashboard</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="css/admin_style.css">
+    <link rel="stylesheet" href="css/style_admin.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cutive+Mono&family=Kanit:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
@@ -59,7 +59,7 @@ $topSellingResult = $conn->query($topSellingSql);
     $totalProducts = $conn->query("SELECT COUNT(*) as total FROM products")->fetch_assoc()['total'];
     $totalOrders = $conn->query("SELECT COUNT(*) as total FROM orders")->fetch_assoc()['total'];
     $pendingOrders = $conn->query("SELECT COUNT(*) as pending FROM orders WHERE status='pending'")->fetch_assoc()['pending'];
-    $salesSummary = $conn->query("SELECT SUM(total_price) as total_sales FROM orders WHERE status='completed'")->fetch_assoc()['total_sales'];
+    $salesSummary = $conn->query("SELECT SUM(total_price) as total_sales FROM orders_history WHERE status='completed'")->fetch_assoc()['total_sales']; // Fetched from orders_history
 
     $revenueSql = "
     SELECT SUM(p.price - i.cost) AS total_revenue 
@@ -74,56 +74,61 @@ $topSellingResult = $conn->query($topSellingSql);
 <!-- Navigation Bar -->
 <?php include ('include/nav.php') ?>
 
+<!-- Welcome Message -->
+
+
 <!-- Dashboard Summary and Section Buttons in Two Columns -->
-<div class="container mt-4">
+<div class="container mt-5">
     <div class="row">
         <!-- Dashboard Summary Column -->
         <div class="col-md-4 dashboard-body">
             <h2>Dashboard Summary</h2>
             <div class="row">
-                <div class="col-md-12">
-                    <div class="card text-center rounded-pill dashboard-summary">
-                        <div class="card-body">
-                            <h5 class="card-title rounded-pill dashboard-summary">Total Products</h5>
-                            <p class="card-text"><?php echo $totalProducts; ?></p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-12">
-                    <div class="card text-center mt-3 rounded-pill dashboard-summary">
+            <div class="col-md-12">
+                    <div class="card text-center mt-3 dashboard-summary">
                         <div class="card-body">
                             <h5 class="card-title dashboard-summary">Total Orders</h5>
                             <p class="card-text"><?php echo $totalOrders; ?></p>
                         </div>
                     </div>
+                </div> 
+
+                <div class="col-md-6">
+                    <div class="card text-center mt-3 dashboard-summary">
+                        <div class="card-body">
+                            <h5 class="card-title dashboard-summary">Total Products</h5>
+                            <p class="card-text"><?php echo $totalProducts; ?></p>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-md-12">
-                    <div class="card text-center mt-3 rounded-pill dashboard-summary">
+                
+                <div class="col-md-6">
+                    <div class="card text-center mt-3 dashboard-summary">
                         <div class="card-body">
                             <h5 class="card-title dashboard-summary">Pending Orders</h5>
                             <p class="card-text"><?php echo $pendingOrders; ?></p>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-12">
-                    <div class="card text-center mt-3 rounded-pill dashboard-summary">
+                <div class="col-md-6">
+                    <div class="card text-center mt-3 dashboard-summary">
                         <div class="card-body">
                             <h5 class="card-title dashboard-summary">Sales Summary</h5>
                             <p class="card-text">₱<?php echo number_format($salesSummary, 2); ?></p>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-12">
-                    <div class="card text-center mt-3 rounded-pill dashboard-summary">
+                <div class="col-md-6">
+                    <div class="card text-center mt-3 dashboard-summary">
                         <div class="card-body">
                             <h5 class="card-title dashboard-summary">Total Revenue</h5>
                             <p class="card-text">₱<?php echo number_format($totalRevenue, 2); ?></p>
                         </div>
                     </div>
                 </div>
+                
             </div>
         </div>
-
         <!-- Section Buttons Column -->
         <div class="col-md-4">
             <h2>Manage Sections</h2>
@@ -155,7 +160,7 @@ $topSellingResult = $conn->query($topSellingSql);
                 <?php $first = true; ?>
                 <?php while ($row = $lowStockResult->fetch_assoc()): ?>
                     <div class="carousel-item <?php if ($first) { echo 'active'; $first = false; } ?>">
-                        <div class="card text-center rounded-pill dashboard-summary">
+                        <div class="card text-center dashboard-summary">
                             <div class="card-body">
                                 <h5 class="card-title"><?php echo $row['product_name']; ?></h5>
                                 <p class="card-text">Stock: <?php echo $row['stock']; ?> units</p>
@@ -188,11 +193,7 @@ $topSellingResult = $conn->query($topSellingSql);
     </div>
 </div>
 
-
-
-
-
-
+            </br>
     <!-- Carousel Container -->
 <div class="container mt-5">
     <h2>Top Selling Products</h2>
@@ -223,6 +224,8 @@ $topSellingResult = $conn->query($topSellingSql);
     </div>
 </div>
 
+            </br>
+
 
 
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
@@ -252,28 +255,4 @@ $topSellingResult = $conn->query($topSellingSql);
         currentIndex = (currentIndex < Math.ceil(totalCards / 3) - 1) ? currentIndex + 1 : 0;
         showCards(currentIndex);
     }
-</script>
-
-<script>
-    function createLeaf() {
-        const leaf = document.createElement('div');
-        leaf.classList.add('leaf');
-        
-        // Random horizontal starting position
-        leaf.style.left = `${Math.random() * 100}vw`;
-
-        // Random animation duration
-        const fallDuration = Math.random() * 5 + 5; // 5 to 10 seconds
-        leaf.style.animationDuration = `${fallDuration}s`;
-
-        document.body.appendChild(leaf);
-
-        // Remove the leaf after it falls
-        setTimeout(() => {
-            leaf.remove();
-        }, fallDuration * 1000);
-    }
-
-    // Generate leaves every 1 second
-    setInterval(createLeaf, 1000);
 </script>
