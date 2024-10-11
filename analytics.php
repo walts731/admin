@@ -28,6 +28,11 @@
             width: 100%;
             height: 400px;
         }
+        /* Style for the smaller customer acquisition chart */
+        .small-chart {
+            width: 100px; /* Adjust width as needed */
+            height: 100px; /* Adjust height as needed */
+        }
     </style>
 </head>
 <body>
@@ -41,15 +46,29 @@
 
         <!-- Sales Performance Chart -->
         <div class="chart-container">
-            <h2 class="chart-title">Sales Performance (Last 6 Months)</h2>
+            <h2 class="chart-title">Sales Performance</h2>
+            <select id="yearSelect">
+                <?php
+                // Fetch available years from the database for the dropdown
+                $yearsQuery = "SELECT DISTINCT YEAR(order_date) AS year FROM orders_history ORDER BY year DESC";
+                $yearsResult = $conn->query($yearsQuery);
+                if ($yearsResult->num_rows > 0) {
+                    while ($yearRow = $yearsResult->fetch_assoc()) {
+                        $year = $yearRow['year'];
+                        echo "<option value='$year'>$year</option>";
+                    }
+                }
+                ?>
+            </select>
             <canvas id="salesChart" class="chart"></canvas>
         </div>
 
-        <!-- Customer Acquisition Chart -->
+        <!-- Customer Acquisition Chart (Smaller) -->
         <div class="chart-container">
             <h2 class="chart-title">Customer Acquisition</h2>
-            <canvas id="customerChart" class="chart"></canvas>
+            <canvas id="customerChart" class="chart small-chart"></canvas> 
         </div>
+
 
         <!-- Top Products Chart -->
         <div class="chart-container">
@@ -63,35 +82,48 @@
     <?php
     
 
-    // Fetch sales data from the 'sales' table for the last 6 months
-    $salesQuery = "SELECT total_price, sale_date FROM sales ORDER BY sale_date DESC LIMIT 6";
-    $result = $conn->query($salesQuery);
+// Set the desired year for which you want to display the sales data
+$year = date('Y'); // You can change this to any year you want to analyze
 
-    $salesData = [];
-    $salesLabels = [];
+// Fetch total sales for each month of the specified year
+$salesQuery = "
+    SELECT 
+        MONTH(order_date) AS month, 
+        COALESCE(SUM(total_price), 0) AS total_sales
+    FROM 
+        orders_history
+    WHERE 
+        YEAR(order_date) = $year
+    GROUP BY 
+        month
+    ORDER BY 
+        month
+";
 
-    if ($result->num_rows > 0) {
-        while ($row = $result->fetch_assoc()) {
-            // Push the total_price and formatted sale_date to arrays
-            $salesData[] = $row['total_price'];
-            $salesLabels[] = date('F', strtotime($row['sale_date'])); // Format date as month name
-        }
-    } else {
-        // If no sales data is available, set default values
-        $salesData = [0, 0, 0, 0, 0, 0];
-        $salesLabels = ['January', 'February', 'March', 'April', 'May', 'June'];
+$result = $conn->query($salesQuery);
+
+// Initialize arrays to hold sales data and labels
+$salesData = array_fill(0, 12, 0); // Initialize all months with 0
+$salesLabels = ['January', 'February', 'March', 'April', 'May', 'June', 
+                'July', 'August', 'September', 'October', 'November', 'December'];
+
+if ($result->num_rows > 0) {
+    while ($row = $result->fetch_assoc()) {
+        $salesData[$row['month'] - 1] = (float)$row['total_sales']; // Store sales data by month (0-indexed)
     }
+} 
+
 
     // Fetch top-selling product data from 'order_items' and 'products' tables
     $productsQuery = "
-        SELECT p.product_name, SUM(oi.quantity) as total_sold
-        FROM order_items oi
-        JOIN products p ON oi.product_id = p.product_id
-        JOIN orders o ON oi.order_id = o.order_id
-        WHERE o.status = 'completed'
-        GROUP BY p.product_name
-        ORDER BY total_sold DESC
-        LIMIT 5";
+    SELECT p.product_name, SUM(oh.quantity) as total_sold
+    FROM orders_history oh
+    JOIN products p ON oh.product_id = p.product_id
+    WHERE oh.status = 'completed'
+    GROUP BY p.product_name
+    ORDER BY total_sold DESC
+    LIMIT 5";
+
     
     $productsResult = $conn->query($productsQuery);
 
@@ -118,12 +150,13 @@
 
     // Count returning customers (you can define returning as users who have placed more than one order)
     $returningCustomerQuery = "
-        SELECT COUNT(DISTINCT u.user_id) as returning_customers
-        FROM users u
-        JOIN orders o ON u.user_id = o.user_id
-        WHERE o.status = 'completed'
-        GROUP BY u.user_id
-        HAVING COUNT(o.order_id) > 1";
+    SELECT COUNT(DISTINCT u.user_id) as returning_customers
+    FROM users u
+    JOIN orders_history oh ON u.user_id = oh.user_id
+    WHERE oh.status = 'completed'
+    GROUP BY u.user_id
+    HAVING COUNT(oh.order_id) > 1";
+
     
     $returningCustomerResult = $conn->query($returningCustomerQuery);
     $returningCustomers = $returningCustomerResult->num_rows ?? 0;
@@ -134,32 +167,41 @@
 
     <script>
         // Pass PHP data to JavaScript for sales
-        const salesData = <?php echo json_encode($salesData); ?>;
-        const salesLabels = <?php echo json_encode($salesLabels); ?>;
+const salesData = <?php echo json_encode($salesData); ?>;
+const salesLabels = <?php echo json_encode($salesLabels); ?>;
 
-        // Sales Performance Chart
-        const salesCtx = document.getElementById('salesChart').getContext('2d');
-        const salesChart = new Chart(salesCtx, {
-            type: 'line',
-            data: {
-                labels: salesLabels, // Dynamically set month labels
-                datasets: [{
-                    label: 'Sales (₱)',
-                    data: salesData, // Dynamically set sales data
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    borderWidth: 1,
-                    fill: true,
-                }]
+// Sales Performance Chart
+const salesCtx = document.getElementById('salesChart').getContext('2d');
+const salesChart = new Chart(salesCtx, {
+    type: 'bar', // Change to 'bar' for better visibility by month
+    data: {
+        labels: salesLabels, // Dynamically set month labels
+        datasets: [{
+            label: 'Sales (₱)',
+            data: salesData, // Dynamically set sales data
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            borderColor: 'rgba(75, 192, 192, 1)',
+            borderWidth: 1,
+        }]
+    },
+    options: {
+        scales: {
+            y: {
+                beginAtZero: true,
+                title: {
+                    display: true,
+                    text: 'Sales (₱)'
+                }
             },
-            options: {
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
+            x: {
+                title: {
+                    display: true,
+                    text: 'Months'
                 }
             }
-        });
+        }
+    }
+});
 
         // Pass PHP data to JavaScript for customer acquisition
         const newCustomers = <?php echo json_encode($newCustomers); ?>;
@@ -175,13 +217,14 @@
                     label: 'Customers',
                     data: [newCustomers, returningCustomers], // Dynamically set customer data
                     backgroundColor: [
-                        'rgba(54, 162, 235, 0.2)',
-                        'rgba(255, 206, 86, 0.2)'
+                        'rgba(75, 192, 192, 0.2)', // Light green
+                        'rgba(153, 255, 153, 0.2)' // Lighter green
                     ],
                     borderColor: [
-                        'rgba(54, 162, 235, 1)',
-                        'rgba(255, 206, 86, 1)'
+                        'rgba(75, 192, 192, 1)',   // Darker green
+                        'rgba(0, 128, 0, 1)'      // Strong green
                     ],
+
                     borderWidth: 1
                 }]
             }
@@ -201,19 +244,20 @@
                     label: 'Units Sold',
                     data: productUnitsSold, // Dynamically set units sold data
                     backgroundColor: [
-                        'rgba(255, 99, 132, 0.2)',
-                        'rgba(54, 162, 235, 0.2)',
-                        'rgba(255, 206, 86, 0.2)',
-                        'rgba(75, 192, 192, 0.2)',
-                        'rgba(153, 102, 255, 0.2)'
+                        'rgba(144, 238, 144, 0.2)', // Light green
+                        'rgba(60, 179, 113, 0.2)',  // Medium sea green
+                        'rgba(34, 139, 34, 0.2)',    // Forest green
+                        'rgba(0, 128, 0, 0.2)',      // Green
+                        'rgba(0, 255, 0, 0.2)'       // Lime green
                     ],
                     borderColor: [
-                        'rgba(255, 99, 132, 1)',
-                        'rgba(54, 162, 235, 1)',
-                        'rgba(255, 206, 86, 1)',
-                        'rgba(75, 192, 192, 1)',
-                        'rgba(153, 102, 255, 1)'
+                        'rgba(144, 238, 144, 1)', // Light green
+                        'rgba(60, 179, 113, 1)',  // Medium sea green
+                        'rgba(34, 139, 34, 1)',    // Forest green
+                        'rgba(0, 128, 0, 1)',      // Green
+                        'rgba(0, 255, 0, 1)'       // Lime green
                     ],
+
                     borderWidth: 1
                 }]
             },
@@ -225,6 +269,25 @@
                 }
             }
         });
+
+        // Event listener for the year selection dropdown
+        document.getElementById('yearSelect').addEventListener('change', function() {
+            const selectedYear = this.value;
+            fetchSalesData(selectedYear); // Fetch sales data for the selected year
+        });
+
+        // Function to fetch sales data for the selected year
+        function fetchSalesData(selectedYear) {
+            fetch('fetch_sales_data.php?year=' + selectedYear) // Replace with your actual PHP file
+                .then(response => response.json())
+                .then(data => {
+                    salesChart.data.datasets[0].data = data.salesData; // Update sales data
+                    salesChart.update(); // Update the chart
+                })
+                .catch(error => {
+                    console.error('Error fetching sales data:', error);
+                });
+        }
     </script>
 </body>
 </html>

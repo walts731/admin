@@ -12,32 +12,34 @@ $revenueSql = "
     SELECT SUM(p.price - i.cost) AS total_revenue 
     FROM products p 
     JOIN inventory i ON p.product_id = i.product_id
-    WHERE p.stock > 0"; // Considering only products that are in stock
+    WHERE i.stock > 0"; // Now using stock from the inventory table
 
 $totalRevenue = $conn->query($revenueSql)->fetch_assoc()['total_revenue'];
+
 
 // Fetch low stock products (e.g., stock < 5)
 $lowStockSql = "
     SELECT i.product_id, p.product_name, i.stock 
     FROM inventory i 
     JOIN products p ON i.product_id = p.product_id 
-    WHERE i.stock < 5"; // Adjust the stock threshold as needed
+    WHERE i.stock < 5"; // Adjust threshold as needed
 
 $lowStockResult = $conn->query($lowStockSql);
 
-// SQL query to get top-selling products from completed orders
 $topSellingSql = "
-    SELECT oi.product_id, p.product_name, p.image_url, SUM(oi.quantity) as total_sold
-    FROM order_items oi
-    JOIN orders o ON oi.order_id = o.order_id
-    JOIN products p ON oi.product_id = p.product_id
-    WHERE o.status = 'completed'
-    GROUP BY oi.product_id
+    SELECT oh.product_id, p.product_name, p.image_url, SUM(oh.quantity) as total_sold
+    FROM orders_history oh
+    JOIN products p ON oh.product_id = p.product_id
+    WHERE oh.status = 'completed'
+    GROUP BY oh.product_id
     ORDER BY total_sold DESC
-    LIMIT 3"; // You can adjust the limit to show more top-selling products
+    LIMIT 3"; // Adjust the limit to show more top-selling products
 
 $topSellingResult = $conn->query($topSellingSql);
+
+
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -59,14 +61,14 @@ $topSellingResult = $conn->query($topSellingSql);
     $pendingOrders = $conn->query("SELECT COUNT(*) as pending FROM orders WHERE status='pending'")->fetch_assoc()['pending'];
     $salesSummary = $conn->query("SELECT SUM(total_price) as total_sales FROM orders WHERE status='completed'")->fetch_assoc()['total_sales'];
 
-    // Calculate total revenue dynamically based on product prices and inventory costs
     $revenueSql = "
-        SELECT SUM(p.price - i.cost) AS total_revenue 
-        FROM products p 
-        JOIN inventory i ON p.product_id = i.product_id
-        WHERE p.stock > 0"; // Assuming you only want to consider products that are in stock
+    SELECT SUM(p.price - i.cost) AS total_revenue 
+    FROM products p 
+    JOIN inventory i ON p.product_id = i.product_id
+    WHERE i.stock > 0"; // Now using stock from the inventory table
 
-    $totalRevenue = $conn->query($revenueSql)->fetch_assoc()['total_revenue']; 
+    $totalRevenue = $conn->query($revenueSql)->fetch_assoc()['total_revenue'];
+
 ?>
 
 <!-- Navigation Bar -->
