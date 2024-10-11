@@ -13,7 +13,7 @@ $checkTableSql = "CREATE TABLE IF NOT EXISTS inventory (
 $conn->query($checkTableSql);
 
 // Fetch products from the database
-$sql = "SELECT `product_id`, `product_name`, `product_description`, `stock`, `price`, `image_url`, `created_at` FROM `products`";
+$sql = "SELECT `product_id`, `product_name`, `product_description`, `price`, `image_url`, `created_at` FROM `products`";
 $result = $conn->query($sql);
 
 // Check if the form has been submitted to update a product in the inventory
@@ -28,7 +28,19 @@ if (isset($_POST['updateInventory'])) {
     $stmt->bind_param("idi", $stock, $cost, $productId);
 
     if ($stmt->execute()) {
-        echo "<script>alert('Inventory updated successfully!');</script>";
+        // **Update the inventory table's stock, not the products table.**
+        $updateInventorySql = "UPDATE inventory SET stock = ? WHERE product_id = ?";
+        $updateInventoryStmt = $conn->prepare($updateInventorySql);
+        $updateInventoryStmt->bind_param("ii", $stock, $productId);
+        
+        if ($updateInventoryStmt->execute()) {
+            echo "<script>alert('Inventory updated successfully!');</script>";
+        } else {
+            echo "<script>alert('Error updating inventory: " . $conn->error . "');</script>";
+        }
+        
+        $updateInventoryStmt->close();
+        
     } else {
         echo "<script>alert('Error updating inventory: " . $conn->error . "');</script>";
     }

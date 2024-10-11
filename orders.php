@@ -36,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['order_id']) && isset($
             $insertHistoryQuery = "INSERT INTO orders_history (order_id, user_id, total_price, status, order_date, order_item_id, product_id, quantity, price) 
                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
             
-            // Loop through each item and insert it into orders_history
+            // Loop through each item and insert it into orders_history and update inventory
             while ($item = $itemsResult->fetch_assoc()) {
                 $stmt = $conn->prepare($insertHistoryQuery);
                 $stmt->bind_param("iissiiidd", 
@@ -51,6 +51,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['order_id']) && isset($
                     $item['price']
                 );
                 $stmt->execute();
+
+                // Update inventory stock
+                $updateInventoryQuery = "UPDATE inventory SET stock = stock - ? WHERE product_id = ?";
+                $inventoryStmt = $conn->prepare($updateInventoryQuery);
+                $inventoryStmt->bind_param("ii", $item['quantity'], $item['product_id']);
+                $inventoryStmt->execute();
+                $inventoryStmt->close();
             }
             $stmt->close();
 
