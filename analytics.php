@@ -50,7 +50,7 @@
             <select id="yearSelect">
                 <?php
                 // Fetch available years from the database for the dropdown
-                $yearsQuery = "SELECT DISTINCT YEAR(order_date) AS year FROM orders_history ORDER BY year DESC";
+                $yearsQuery = "SELECT DISTINCT YEAR(archived_at) AS year FROM orders_history ORDER BY year DESC";
                 $yearsResult = $conn->query($yearsQuery);
                 if ($yearsResult->num_rows > 0) {
                     while ($yearRow = $yearsResult->fetch_assoc()) {
@@ -88,12 +88,12 @@ $year = date('Y'); // You can change this to any year you want to analyze
 // Fetch total sales for each month of the specified year
 $salesQuery = "
     SELECT 
-        MONTH(order_date) AS month, 
+        MONTH(archived_at) AS month, 
         COALESCE(SUM(total_price), 0) AS total_sales
     FROM 
         orders_history
     WHERE 
-        YEAR(order_date) = $year
+        YEAR(archived_at) = $year
     GROUP BY 
         month
     ORDER BY 
