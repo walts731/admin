@@ -49,14 +49,14 @@ if (isset($_POST['addProduct'])) {
     <link rel="stylesheet" href="css/product.css">
 </head>
 
-<body>
+<body style="background-color: #D6EFD8;">
     <!-- Navigation Bar -->
     <?php include ('include/nav.php')?>
 
     <div class="container mt-5">
-        <h2 class="mb-4">Products Management</h2>
+    <h1 class="text-center mb-4">Orders History</h1>
         <!-- Button to trigger modal -->
-        <button class="btn btn-success btn-custom mb-3" data-bs-toggle="modal" data-bs-target="#addProductModal">Add New Product</button>
+        <button class="btn btn-success btn-custom mb-3 rounded-pill" data-bs-toggle="modal" data-bs-target="#addProductModal">Add New Product</button>
         
         <!-- Modal -->
 <div class="modal fade" id="addProductModal" tabindex="-1" aria-labelledby="addProductModalLabel" aria-hidden="true">

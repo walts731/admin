@@ -6,6 +6,7 @@
     <title>Orders History Management</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="css/product.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
 </head>
 
 <body style="background-color: #D6EFD8;">
@@ -31,6 +32,9 @@
                     `oh`.`product_id`, 
                     `oh`.`quantity`, 
                     `oh`.`price`,
+                    `oh`.`shipping_address`,
+                    `oh`.`payment_method`,
+                    `oh`.`reference_number`,
                     `p`.`product_name` AS `product_name`,
                     `u`.`username` AS `username` 
                 FROM 
@@ -44,6 +48,32 @@
 
         // Check if there are results
         if ($result->num_rows > 0) {
+            // Group orders by order_id
+            $orders = [];
+            while ($row = $result->fetch_assoc()) {
+                if (!isset($orders[$row['order_id']])) {
+                    $orders[$row['order_id']] = [
+                        'details' => [
+                            'order_id' => $row['order_id'],
+                            'username' => $row['username'],
+                            'status' => $row['status'],
+                            'archived_at' => date('M d Y h:ia', strtotime($row["archived_at"])),
+                            'shipping_address' => $row['shipping_address'],
+                            'payment_method' => $row['payment_method'],
+                            'reference_number' => $row['reference_number'],
+                            'total_price' => $row['total_price'] // Assuming total_price is already calculated
+                        ],
+                        'items' => []
+                    ];
+                }
+                $orders[$row['order_id']]['items'][] = [
+                    'product_name' => $row['product_name'],
+                    'quantity' => $row['quantity'],
+                    'price' => $row['price'],
+                    'order_item_id' => $row['order_item_id'] // Add order_item_id for reference
+                ];
+            }
+
             // Output data of each row
             echo '<div class="table-responsive">';
             echo '<table class="table table-striped table-bordered">';
@@ -53,38 +83,71 @@
                         <th>Order ID</th>
                         <th>Username</th>
                         <th>Status</th>
-                        <th>Order Date</th>
                         <th>Archived At</th>
-                        <th>Product Name</th>
-                        <th>Quantity</th>
-                        <th>Total Amount</th> 
+                        <th>Shipping Address</th>
+                        <th>Payment Method</th>
+                        <th>Reference Number</th>
+                        <th>Total Amount</th>
+                        <th>Items</th>
                     </tr>
                   </thead>';
             echo '<tbody>';
-            
-            while ($row = $result->fetch_assoc()) {
-                // Format the date using php's date function
-                $order_date = date('M d Y h:ia', strtotime($row["order_date"]));
-                $archived_at = date('M d Y h:ia', strtotime($row["archived_at"]));
 
-                // Calculate the total amount for the product
-                $total_amount = $row["quantity"] * $row["price"]; 
+            foreach ($orders as $order) : ?>
+                <tr>
+                    <td><?= $order['details']['order_id'] ?></td>
+                    <td><?= $order['details']['username'] ?></td>
+                    <td style="font-weight: bold;">
+                        <?php if ($order['details']['status'] === 'completed') : ?>
+                            <span style="color: green;"><?= $order['details']['status'] ?></span>
+                        <?php elseif ($order['details']['status'] === 'cancelled') : ?>
+                            <span style="color: red;"><?= $order['details']['status'] ?></span>
+                        <?php else : ?>
+                            <?= $order['details']['status'] ?>
+                        <?php endif; ?>
+                    </td>
+                    <td><?= $order['details']['archived_at'] ?></td>
+                    <td><?= $order['details']['shipping_address'] ?></td>
+                    <td><?= $order['details']['payment_method'] ?></td>
+                    <td><?= $order['details']['reference_number'] ?></td>
+                    <td><?= number_format($order['details']['total_price'], 2) ?></td>
+                    <td>
+                        <!-- Eye icon to view order items -->
+                        <button class="btn btn-link" data-bs-toggle="modal" data-bs-target="#orderItemsModal<?= $order['details']['order_id'] ?>">
+                            <i class="bi bi-eye"></i>
+                        </button>
 
-                echo "<tr>
-                        <td>" . $row["order_id"] . "</td>
-                        <td>" . $row["username"] . "</td>
-                        <td style='color: green;'>" . $row["status"] . "</td>
-                        <td>" . $order_date . "</td>
-                        <td>" . $archived_at . "</td>
-                        <td>" . $row["product_name"] . "</td>
-                        <td>" . $row["quantity"] . "</td>
-                        <td>" . number_format($total_amount, 2) . "</td>
-                      </tr>";
-            }
-            
-            echo '</tbody>';
-            echo '</table>';
-            echo '</div>';
+                        <!-- Modal for displaying order items -->
+                        <div class="modal fade" id="orderItemsModal<?= $order['details']['order_id'] ?>" tabindex="-1" aria-labelledby="orderItemsModalLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="orderItemsModalLabel">Order Items for Order #<?= $order['details']['order_id'] ?></h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <ul class="list-group">
+                                            <?php foreach ($order['items'] as $item): ?>
+                                                <li class="list-group-item">
+                                                    <strong><?= $item['product_name'] ?></strong> (<?= $item['quantity'] ?>) - 
+                                                    Price: <?= number_format($item['price'], 2) ?>
+                                                </li>
+                                            <?php endforeach; ?>
+                                        </ul>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+            </tbody>
+        </table>
+        </div>
+        <?php
         } else {
             echo '<div class="alert alert-warning" role="alert">No results found.</div>';
         }

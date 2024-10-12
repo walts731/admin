@@ -1,4 +1,5 @@
-<?php 
+<?php
+// Include database connection
 include('include/connect.php');
 
 // Handle order update
@@ -13,9 +14,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['order_id']) && isset($
     $stmt->execute();
     $stmt->close();
 
-    // If the order status is "completed", move the order to orders_history and delete it from orders
-    if ($status === 'completed') {
-        // Fetch the order details from orders table
+    // If the order status is "completed" or "cancelled", move the order to orders_history and delete it from orders
+    if ($status === 'completed' || $status === 'cancelled') {
+        // Fetch the order details from the orders table
         $orderQuery = "SELECT * FROM orders WHERE order_id = ?";
         $stmt = $conn->prepare($orderQuery);
         $stmt->bind_param("i", $orderId);
@@ -33,31 +34,37 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['order_id']) && isset($
             $itemsResult = $stmt->get_result();
 
             // Prepare to insert into orders_history
-            $insertHistoryQuery = "INSERT INTO orders_history (order_id, user_id, total_price, status, order_date, order_item_id, product_id, quantity, price) 
-                                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-            
+            $insertHistoryQuery = "INSERT INTO orders_history 
+                (order_id, user_id, total_price, status, order_date, order_item_id, product_id, quantity, price, shipping_address, payment_method, reference_number, archived_at) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
+
             // Loop through each item and insert it into orders_history and update inventory
             while ($item = $itemsResult->fetch_assoc()) {
                 $stmt = $conn->prepare($insertHistoryQuery);
-                $stmt->bind_param("iissiiidd", 
+                $stmt->bind_param("iissiiiddsss", 
                     $order['order_id'], 
                     $order['user_id'], 
                     $order['total_price'], 
-                    $order['status'], 
-                    $order['order_date'], 
+                    $status,  // The updated status
+                    $order['order_date'],  
                     $item['order_item_id'], 
                     $item['product_id'], 
                     $item['quantity'], 
-                    $item['price']
+                    $item['price'],
+                    $order['shipping_address'], 
+                    $order['payment_method'], 
+                    $order['reference_number'],
                 );
                 $stmt->execute();
 
-                // Update inventory stock
-                $updateInventoryQuery = "UPDATE inventory SET stock = stock - ? WHERE product_id = ?";
-                $inventoryStmt = $conn->prepare($updateInventoryQuery);
-                $inventoryStmt->bind_param("ii", $item['quantity'], $item['product_id']);
-                $inventoryStmt->execute();
-                $inventoryStmt->close();
+                // Update inventory stock only if the order is completed (not cancelled)
+                if ($status === 'completed') {
+                    $updateInventoryQuery = "UPDATE inventory SET stock = stock - ? WHERE product_id = ?";
+                    $inventoryStmt = $conn->prepare($updateInventoryQuery);
+                    $inventoryStmt->bind_param("ii", $item['quantity'], $item['product_id']);
+                    $inventoryStmt->execute();
+                    $inventoryStmt->close();
+                }
             }
             $stmt->close();
 
@@ -80,29 +87,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['order_id']) && isset($
         header("Location: orders.php");
         exit();
     }
-}
 
-// Handle order deletion (without completion)
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete_order_id'])) {
-    $deleteOrderId = $_POST['delete_order_id'];
-
-    // First, delete associated order items
-    $deleteItemsQuery = "DELETE FROM order_items WHERE order_id = ?";
-    $stmt = $conn->prepare($deleteItemsQuery);
-    $stmt->bind_param("i", $deleteOrderId);
-    $stmt->execute();
-    $stmt->close();
-
-    // Now, delete the order
-    $deleteQuery = "DELETE FROM orders WHERE order_id = ?";
-    $stmt = $conn->prepare($deleteQuery);
-    $stmt->bind_param("i", $deleteOrderId);
-    $stmt->execute();
-    $stmt->close();
-
-    // Redirect to orders.php after deletion
-    header("Location: orders.php");
-    exit();
+    
 }
 ?>
 
@@ -113,21 +99,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete_order_id'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Orders Management</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
 </head>
-<body>
+<body style="background-color: #D6EFD8;">
     <!-- Navigation Bar -->
     <?php include('include/nav.php') ?>
 
     <div class="container mt-5">
-        <h2>Orders Management</h2>
-        <table class="table table-striped">
-            <thead>
+    <h1 class="text-center mb-4">Orders History</h1>
+    <table class="table table-striped table-responsive">
+            <thead class="" style="background-color: #508D4E; color: white;">
                 <tr>
-                    <th scope="col">Order ID</th>
-                    <th scope="col">User ID</th>
+                    <th scope="col">Order Number</th>
                     <th scope="col">Username</th>
                     <th scope="col">Order Date</th>
                     <th scope="col">Items</th>
+                    <th scope="col">Shipping Address</th>
+                    <th scope="col">Payment Method</th>
+                    <th scope="col">Reference Number</th>
                     <th scope="col">Status</th>
                     <th scope="col">Actions</th>
                 </tr>
@@ -137,6 +126,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete_order_id'])) {
                 // Fetch orders along with their items, user details, and product details
                 $query = "
                     SELECT o.order_id, o.user_id, o.total_price, o.status, o.order_date, 
+                           o.shipping_address, o.payment_method, o.reference_number, 
                            u.username, 
                            oi.order_item_id, oi.product_id, oi.quantity, oi.price, 
                            p.product_name 
@@ -161,12 +151,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete_order_id'])) {
                 foreach ($orders as $orderId => $order): ?>
                 <tr>
                     <td>#<?= $order['details']['order_id'] ?></td>
-                    <td><?= htmlspecialchars($order['details']['user_id']) ?></td>
                     <td><?= htmlspecialchars($order['details']['username']) ?></td>
                     <td><?= htmlspecialchars($order['details']['order_date']) ?></td>
                     <td>
+                        <!-- Eye icon to view order items -->
                         <button class="btn btn-link" data-bs-toggle="modal" data-bs-target="#orderItemsModal<?= $orderId ?>">
-                            View Items <i class="bi bi-eye"></i>
+                            <i class="bi bi-eye"></i>
                         </button>
 
                         <!-- Modal for displaying order items -->
@@ -194,22 +184,38 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete_order_id'])) {
                             </div>
                         </div>
                     </td>
-                    <td><span class="badge bg-warning"><?= htmlspecialchars($order['details']['status']) ?></span></td>
+                    <td><?= htmlspecialchars($order['details']['shipping_address']) ?></td>
+                    <td><?= htmlspecialchars($order['details']['payment_method']) ?></td>
+                    <td><?= htmlspecialchars($order['details']['reference_number']) ?></td>
                     <td>
-                        <!-- Form for updating order status -->
-                        <form action="" method="post" class="d-inline">
-                            <input type="hidden" name="order_id" value="<?= $order['details']['order_id'] ?>">
-                            <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
-                                <option value="pending" <?= $order['details']['status'] === 'pending' ? 'selected' : '' ?>>Pending</option>
-                                <option value="completed" <?= $order['details']['status'] === 'completed' ? 'selected' : '' ?>>Completed</option>
-                                <option value="cancelled" <?= $order['details']['status'] === 'cancelled' ? 'selected' : '' ?>>Cancelled</option>
-                            </select>
-                        </form>
-                        <!-- Form for deleting order -->
-                        <form action="" method="post" class="d-inline">
-                            <input type="hidden" name="delete_order_id" value="<?= $order['details']['order_id'] ?>">
-                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                        </form>
+                        <span class="badge 
+                        <?php 
+                        if ($order['details']['status'] === 'pending') {
+                            echo 'bg-warning';
+                        } elseif ($order['details']['status'] === 'completed') {
+                            echo 'bg-success';
+                        } elseif ($order['details']['status'] === 'cancelled') {
+                            echo 'bg-danger';
+                        }
+                        ?>
+                        "><?= htmlspecialchars($order['details']['status']) ?></span>
+                    </td>
+                    <td>
+                        <div class="d-flex flex-column gap-1">
+                            <!-- Form for updating order status -->
+                            <form action="" method="post" class="d-inline">
+                                <input type="hidden" name="order_id" value="<?= $order['details']['order_id'] ?>">
+                                <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
+                                    <option value="pending" <?= $order['details']['status'] === 'pending' ? 'selected' : '' ?>>Pending</option>
+                                    <option value="completed" <?= $order['details']['status'] === 'completed' ? 'selected' : '' ?>>Completed</option>
+                                    <option value="cancelled" <?= $order['details']['status'] === 'cancelled' ? 'selected' : '' ?>>Cancelled</option>
+                                </select>
+                            </form>
+                            <!-- Form for deleting order -->
+                            <form action="" method="post" class="d-inline">
+                                <input type="hidden" name="delete_order_id" value="<?= $order['details']['order_id'] ?>">
+                            </form>
+                        </div>
                     </td>
                 </tr>
                 <?php endforeach; ?>
