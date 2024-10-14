@@ -306,5 +306,7 @@ const salesChart = new Chart(salesCtx, {
                 });
         }
     </script>
+    <?php include('include/footer.php')?>
+
 </body>
 </html>

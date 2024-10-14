@@ -141,4 +141,14 @@ body {
     background-color: #75975e;
 }
 
+.hover-effect {
+    background-color: #333; /* Example hover background color */
+    color: #fff; /* Example hover text color */
+  }
+  
+  .hover-effect:hover {
+    background-color: #555; /* Example hover background color */
+    color: #fff; /* Example hover text color */
+  }
+
 

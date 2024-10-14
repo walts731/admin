@@ -15,6 +15,15 @@
 
     <div class="container mt-5">
         <h2 class="text-center mb-4">User Management</h2>
+        <!-- Search Bar -->
+        <div class="mb-3">
+            <form action="users.php" method="GET"> 
+                <div class="input-group">
+                    <input type="text" class="form-control" name="search" placeholder="Search by username or email..." aria-label="Search">
+                    <button class="btn btn-outline-secondary" type="submit">Search</button>
+                </div>
+            </form>
+        </div>
         <div class="table-responsive">
             <table class="table table-hover table-bordered">
                 <thead class="" style="background-color: #508D4E; color: white;">
@@ -30,6 +39,13 @@
                     <?php
                     // Fetch users
                     $sql = "SELECT user_id, username, email, role, status FROM users";
+
+                    // Apply search filter if a search term is provided
+                    if (isset($_GET['search']) && !empty($_GET['search'])) {
+                        $searchTerm = $_GET['search'];
+                        $sql .= " WHERE username LIKE '%$searchTerm%' OR email LIKE '%$searchTerm%'";
+                    }
+
                     $result = $conn->query($sql);
 
                     if ($result->num_rows > 0) {
@@ -105,5 +121,7 @@
             confirmButton.textContent = (userStatus === 'active') ? 'Block User' : 'Unblock User';
         });
     </script>
+    <?php include('include/footer.php')?>
+
 </body>
 </html>

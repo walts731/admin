@@ -12,7 +12,7 @@ align-items: center;
 height: 100vh;
 
 /* Add background image from the img folder */
-background-color: #276221;
+background-color: #D6EFD8;
 
  /* Keep background fixed on scroll */
 }
@@ -105,19 +105,4 @@ background-color: #276221;
     .login-container h2 {
         font-size: 20px;
     }
-}
-
-.nav-tabs .nav-link.active {
-    background-color: #3498db; /* Example color */
-    color: white;
-  }
-
-  .nav-tabs .nav-link {
-    color: white; /* Set text color */
-    background-color: #276221; /* Set background color */
-}
-
-.nav-tabs .nav-link.active {
-    background-color: #348832; /* Active tab background color */
-    border-bottom: 3px solid #348832; /* Active tab border */
 }

@@ -1,4 +1,4 @@
-<nav class="navbar navbar-expand-lg text-light " style="background-color: #276221;">
+<nav class="navbar navbar-expand-lg text-light nav-pills" style="background-color: #276221;">
     <div class="container-fluid">
         <a class="navbar-brand text-light" href="#">
             <img src="img/DELI.png" alt="DELIDAZE Logo" height="30" class="d-inline-block align-text-top rounded">
@@ -9,15 +9,15 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
-                <li class="nav-item"><a class="nav-link text-light" href="index.php">Home</a></li>
-                <li class="nav-item"><a class="nav-link text-light" href="products.php">Products</a></li>
-                <li class="nav-item"><a class="nav-link text-light" href="orders.php">Orders</a></li>
-                <li class="nav-item"><a class="nav-link text-light" href="orders_history.php">Orders History</a></li>
-                <li class="nav-item"><a class="nav-link text-light" href="inventory.php">Inventory</a></li>
-                <li class="nav-item"><a class="nav-link text-light" href="users.php">Users</a></li>
-                <li class="nav-item"><a class="nav-link text-light" href="analytics.php">Analytics</a></li>
-                <li class="nav-item"><a class="nav-link text-light" href="logout.php">Logout</a></li>
+                <li class="nav-item"><a class="nav-link text-light hover-effect" href="index.php">Home</a></li>
+                <li class="nav-item"><a class="nav-link text-light hover-effect" href="products.php">Products</a></li>
+                <li class="nav-item"><a class="nav-link text-light hover-effect" href="orders.php">Orders</a></li>
+                <li class="nav-item"><a class="nav-link text-light hover-effect" href="orders_history.php">Orders History</a></li>
+                <li class="nav-item"><a class="nav-link text-light hover-effect" href="inventory.php">Inventory</a></li>
+                <li class="nav-item"><a class="nav-link text-light hover-effect" href="users.php">Users</a></li>
+                <li class="nav-item"><a class="nav-link text-light hover-effect" href="analytics.php">Analytics</a></li>
+                <li class="nav-item"><a class="nav-link text-light hover-effect" href="logout.php">Logout</a></li>
             </ul>
         </div>
     </div>
-</nav>
+</nav> 

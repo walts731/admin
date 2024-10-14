@@ -28,25 +28,34 @@ if (isset($_POST['updateInventory'])) {
     $stmt->bind_param("idi", $stock, $cost, $productId);
 
     if ($stmt->execute()) {
-        // **Update the inventory table's stock, not the products table.**
-        $updateInventorySql = "UPDATE inventory SET stock = ? WHERE product_id = ?";
-        $updateInventoryStmt = $conn->prepare($updateInventorySql);
-        $updateInventoryStmt->bind_param("ii", $stock, $productId);
-        
-        if ($updateInventoryStmt->execute()) {
-            echo "<script>alert('Inventory updated successfully!');</script>";
-        } else {
-            echo "<script>alert('Error updating inventory: " . $conn->error . "');</script>";
-        }
-        
-        $updateInventoryStmt->close();
-        
+        echo "<script>alert('Inventory updated successfully!');</script>";
     } else {
         echo "<script>alert('Error updating inventory: " . $conn->error . "');</script>";
     }
 
     $stmt->close();
 }
+
+// Check if a search term is provided
+if (isset($_GET['search']) && !empty($_GET['search'])) {
+    $searchTerm = $_GET['search'];
+
+    // Construct the search query
+    $query = "
+        SELECT inv.*, p.product_name 
+        FROM inventory inv 
+        JOIN products p ON inv.product_id = p.product_id
+        WHERE p.product_name LIKE '%$searchTerm%'
+    ";
+
+    $result = mysqli_query($conn, $query);
+} else {
+    // If no search term is provided, fetch all inventory items
+    $query = "SELECT inv.*, p.product_name FROM inventory inv JOIN products p ON inv.product_id = p.product_id";
+    $result = mysqli_query($conn, $query);
+}
+
+
 ?>
 
 <!DOCTYPE html>
@@ -65,6 +74,16 @@ if (isset($_POST['updateInventory'])) {
 
     <div class="container mt-5">
         <h2 class="text-center mb-4">Inventory Management</h2>
+        <!-- Search Bar -->
+        <div class="mb-3">
+            <form action="inventory.php" method="GET"> 
+                <div class="input-group">
+                    <input type="text" class="form-control" name="search" placeholder="Search by product name..." aria-label="Search">
+                    <button class="btn btn-outline-secondary" type="submit">Search</button>
+                </div>
+            </form>
+        </div>
+
         <div class="table-responsive">
             <table class="table table-striped table-bordered">
                 <thead class="" style="background-color: #508D4E; color: white;">
@@ -77,12 +96,8 @@ if (isset($_POST['updateInventory'])) {
                 </thead>
                 <tbody>
                     <?php
-                    // Fetch inventory items to display
-                    $inventorySql = "SELECT inv.*, p.product_name FROM inventory inv JOIN products p ON inv.product_id = p.product_id";
-                    $inventoryResult = $conn->query($inventorySql);
-
-                    if ($inventoryResult->num_rows > 0) {
-                        while ($row = $inventoryResult->fetch_assoc()) {
+                    if ($result->num_rows > 0) {
+                        while ($row = $result->fetch_assoc()) {
                             echo "<tr>
                                 <td>" . htmlspecialchars($row['product_name']) . "</td>
                                 <td>" . htmlspecialchars($row['stock']) . "</td>
@@ -109,5 +124,6 @@ if (isset($_POST['updateInventory'])) {
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 </html>

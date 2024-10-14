@@ -16,6 +16,12 @@
     <div class="container mt-5">
         <h1 class="text-center mb-4">Orders History</h1>
 
+        <!-- Search Bar -->
+        <div class="input-group mb-3">
+            <input type="text" class="form-control" id="searchInput" placeholder="Search by order ID, username, or status...">
+            <button class="btn btn-outline-secondary" type="button" id="searchButton">Search</button>
+        </div>
+
         <?php
         include('include/connect.php');
 
@@ -76,11 +82,11 @@
 
             // Output data of each row
             echo '<div class="table-responsive">';
-            echo '<table class="table table-striped table-bordered">';
+            echo '<table class="table table-striped table-bordered" id="ordersTable">';
             echo '<thead class="" style="background-color: #508D4E; color: white;">
 
                     <tr>
-                        <th>Order ID</th>
+                        <th>Order Number</th>
                         <th>Username</th>
                         <th>Status</th>
                         <th>Archived At</th>
@@ -159,5 +165,31 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Search functionality
+            $("#searchButton").click(function() {
+                var searchTerm = $("#searchInput").val().toLowerCase();
+                $("#ordersTable tbody tr").each(function() {
+                    var orderID = $(this).find("td:first").text().toLowerCase();
+                    var username = $(this).find("td:nth-child(2)").text().toLowerCase();
+                    var status = $(this).find("td:nth-child(3)").text().toLowerCase();
+
+                    if (
+                        orderID.indexOf(searchTerm) > -1 || 
+                        username.indexOf(searchTerm) > -1 || 
+                        status.indexOf(searchTerm) > -1
+                    ) {
+                        $(this).show();
+                    } else {
+                        $(this).hide();
+                    }
+                });
+            });
+        });
+    </script>
+    <?php include('include/footer.php')?>
+
 </body>
 </html>

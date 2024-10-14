@@ -48,25 +48,25 @@ if (isset($_POST['confirmDelete'])) {
     <title>Delete Product</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css">
 </head>
-<body>
+<body style="background-color: #D6EFD8;">
 <?php include('include/nav.php')?>
 
 <div class="container mt-5">
     <h2 class="mb-4">Delete Product</h2>
     <p>Are you sure you want to delete the following product?</p>
     <div class="card mb-4">
-        <div class="card-body">
+        <div class="card-body" style="background-color: #FFFFE0">
             <h5 class="card-title"><?php echo htmlspecialchars($product['product_name']); ?></h5>
             <p class="card-text">Price: ₱<?php echo number_format($product['price'], 2); ?></p>
             <img src="<?php echo htmlspecialchars($product['image_url']); ?>" alt="<?php echo htmlspecialchars($product['product_name']); ?>" width="80" class="img-fluid">
         </div>
     </div>
-    <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal">Delete Product</button>
+    <button class="btn btn-outline-danger rounded-pill" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal">Delete Product</button>
 
     <!-- Confirmation Modal -->
     <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
+        <div class="modal-dialog rounded-3" style="background-color: #cce7c9; ">
+            <div class="modal-content rounded-3" style="background-color: #cce7c9;">
                 <div class="modal-header">
                     <h5 class="modal-title" id="confirmDeleteModalLabel">Confirm Deletion</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -75,10 +75,10 @@ if (isset($_POST['confirmDelete'])) {
                     Are you sure you want to delete this product? This action cannot be undone.
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Cancel</button>
                     <form action="" method="POST">
                         <input type="hidden" name="productId" value="<?php echo htmlspecialchars($product['product_id']); ?>">
-                        <button type="submit" name="confirmDelete" class="btn btn-danger">Delete</button>
+                        <button type="submit" name="confirmDelete" class="btn btn-outline-danger rounded-pill">Delete</button>
                     </form>
                 </div>
             </div>
@@ -87,5 +87,7 @@ if (isset($_POST['confirmDelete'])) {
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<?php include('include/footer.php')?>
+
 </body>
 </html>
