@@ -84,6 +84,8 @@ if (isset($_GET['search']) && !empty($_GET['search'])) {
             </form>
         </div>
 
+        <a href="daily_reports.php" class="btn btn-outline-success rounded-pill mb-3">Daily Reports</a>
+
         <div class="table-responsive">
             <table class="table table-striped table-bordered">
                 <thead class="" style="background-color: #508D4E; color: white;">
