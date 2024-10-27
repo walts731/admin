@@ -24,8 +24,8 @@
                 mysqli_query($conn, $sql);
             }
 
-            // Redirect to the same page (admin_delivery.php)
-            header('Location: admin_delivery.php'); 
+            // Redirect to the same page (free_meals.php)
+            header('Location: free_meals.php'); 
             exit;
         } else {
             // Handle the error if the update fails
@@ -65,7 +65,7 @@
     <div class="container mt-5">
         <h2>Delivery Management</h2>
 
-        <form method="POST" action="admin_delivery.php">
+        <form method="POST" action="free_meals.php">
             <div class="input-group mb-3">
                 <input type="text" class="form-control" name="search_query" placeholder="Search by Address, Contact, or User ID" value="<?php echo $search_query; ?>">
                 <button class="btn btn-outline-secondary" type="submit" name="search">Search</button>
@@ -100,7 +100,7 @@
                         <td><?php echo $row['delivery_status']; ?></td>
                         <td><?php echo ($row['delivery_date'] != null) ? date('Y-m-d H:i:s', strtotime($row['delivery_date'])) : ''; ?></td>
                         <td>
-                            <form method="POST" action="admin_delivery.php">
+                            <form method="POST" action="free_meals.php">
                                 <input type="hidden" name="free_meal_id" value="<?php echo $row['id']; ?>">
                                 <select name="delivery_status" class="form-select">
                                     <option value="Pending" <?php if ($row['delivery_status'] == 'Pending') echo 'selected'; ?>>Pending</option>

@@ -32,13 +32,14 @@
                         <th scope="col">Email</th>
                         <th scope="col">Role</th>
                         <th scope="col">Status</th>
+                        <th scope="col">Subscription Status</th>
                         <th scope="col">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php
                     // Fetch users
-                    $sql = "SELECT user_id, username, email, role, status FROM users";
+                    $sql = "SELECT user_id, username, email, role, status, subscription_status FROM users";
 
                     // Apply search filter if a search term is provided
                     if (isset($_GET['search']) && !empty($_GET['search'])) {
@@ -57,6 +58,7 @@
                                 <td>
                                     <span class='badge ".($row['status'] == 'active' ? 'bg-success' : 'bg-danger')."'>{$row['status']}</span>
                                 </td>
+                                <td>{$row['subscription_status']}</td>
                                 <td>
                                     <button class='btn btn-outline-danger rounded-pill btn-sm' data-bs-toggle='modal' data-bs-target='#blockModal' 
                                             data-userid='{$row['user_id']}' data-username='{$row['username']}' 
