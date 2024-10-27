@@ -64,6 +64,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['order_id']) && isset($
                     $inventoryStmt->bind_param("ii", $item['quantity'], $item['product_id']);
                     $inventoryStmt->execute();
                     $inventoryStmt->close();
+
+                    // Increment order count for the user if order is completed
+                    $userId = $order['user_id'];
+                    $updateOrderCountQuery = "UPDATE users SET order_count = order_count + 1 WHERE user_id = ?";
+                    $updateOrderCountStmt = $conn->prepare($updateOrderCountQuery);
+                    $updateOrderCountStmt->bind_param("i", $userId);
+                    $updateOrderCountStmt->execute();
+                    $updateOrderCountStmt->close();
                 }
             }
             $stmt->close();
