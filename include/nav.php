@@ -16,6 +16,7 @@
                 <li class="nav-item"><a class="nav-link text-light hover-effect" href="inventory.php">Inventory</a></li>
                 <li class="nav-item"><a class="nav-link text-light hover-effect" href="users.php">Users</a></li>
                 <li class="nav-item"><a class="nav-link text-light hover-effect" href="analytics.php">Analytics</a></li>
+                <li class="nav-item"><a class="nav-link text-light hover-effect" href="free_meals.php">Free Meals</a></li>
                 <li class="nav-item"><a class="nav-link text-light hover-effect" href="logout.php">Logout</a></li>
             </ul>
         </div>
