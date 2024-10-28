@@ -8,23 +8,11 @@ if (isset($_POST['add_subscription'])) {
     $status = $_POST['status'];
     $description = $_POST['subscription_description'];
     $price = $_POST['price'];
-    $qrCodeImg = $_FILES['qr_code_img']['name'];
-
-    // Upload QR code image (if provided)
-    if (!empty($qrCodeImg)) {
-        $targetDir = "img/";
-        $targetFile = $targetDir . basename($qrCodeImg);
-        if (move_uploaded_file($_FILES['qr_code_img']['tmp_name'], $targetFile)) {
-            // Image uploaded successfully
-        } else {
-            // Handle image upload error
-            echo "Error uploading QR code image.";
-        }
-    }
+    $discountPercentage = $_POST['discount_percentage']; // Get discount percentage
 
     // Insert new subscription into the database
-    $sql = "INSERT INTO `subscriptions` (`subscription_plan`, `status`, `subscription_description`, `price`, `qr_code_img`) 
-            VALUES ('$subscriptionPlan', '$status', '$description', '$price', '$qrCodeImg')";
+    $sql = "INSERT INTO `subscriptions` (`subscription_plan`, `status`, `subscription_description`, `price`, `discount_percentage`) 
+            VALUES ('$subscriptionPlan', '$status', '$description', '$price', '$discountPercentage')";
 
     if (mysqli_query($conn, $sql)) {
         // Redirect to the subscription management page or show a success message
@@ -43,19 +31,7 @@ if (isset($_POST['update_subscription'])) {
     $status = $_POST['status'];
     $description = $_POST['subscription_description'];
     $price = $_POST['price'];
-    $qrCodeImg = $_FILES['qr_code_img']['name'];
-
-    // Upload QR code image (if provided)
-    if (!empty($qrCodeImg)) {
-        $targetDir = "uploads/qr_codes/";
-        $targetFile = $targetDir . basename($qrCodeImg);
-        if (move_uploaded_file($_FILES['qr_code_img']['tmp_name'], $targetFile)) {
-            // Image uploaded successfully
-        } else {
-            // Handle image upload error
-            echo "Error uploading QR code image.";
-        }
-    }
+    $discountPercentage = $_POST['discount_percentage']; // Get discount percentage
 
     // Update the subscription in the database
     $sql = "UPDATE `subscriptions` 
@@ -63,7 +39,7 @@ if (isset($_POST['update_subscription'])) {
                 `status` = '$status', 
                 `subscription_description` = '$description',
                 `price` = '$price',
-                `qr_code_img` = '$qrCodeImg' 
+                `discount_percentage` = '$discountPercentage' 
             WHERE `subscription_id` = '$subscriptionId'";
 
     if (mysqli_query($conn, $sql)) {
@@ -115,9 +91,11 @@ $subscriptions = mysqli_fetch_all($result, MYSQLI_ASSOC);
     <div class="container mt-5">
         <h2 class="text-center mb-4">Subscription Management</h2>
 
-        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addSubscriptionModal">
-            Add New Subscription
-        </button>
+        <div class="d-flex justify-content-between mb-4">
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addSubscriptionModal">
+                Add New Subscription
+            </button>
+            <a href="payment_method_management.php" class="btn btn-secondary">Manage Payment Methods</a> </div>
 
         <!-- Modal -->
         <div class="modal fade" id="addSubscriptionModal" tabindex="-1" aria-labelledby="addSubscriptionModalLabel" aria-hidden="true">
@@ -149,8 +127,8 @@ $subscriptions = mysqli_fetch_all($result, MYSQLI_ASSOC);
                                 <input type="number" class="form-control" id="price" name="price" required>
                             </div>
                             <div class="form-group">
-                                <label for="qr_code_img">QR Code Image:</label>
-                                <input type="file" class="form-control-file" id="qr_code_img" name="qr_code_img">
+                                <label for="discount_percentage">Discount Percentage:</label>
+                                <input type="number" class="form-control" id="discount_percentage" name="discount_percentage" min="0" max="100" step="0.01">
                             </div>
                             <button type="submit" class="btn btn-success" name="add_subscription">Add Subscription</button>
                         </form>
@@ -171,7 +149,7 @@ $subscriptions = mysqli_fetch_all($result, MYSQLI_ASSOC);
                     <th>Status</th>
                     <th>Description</th>
                     <th>Price</th>
-                    <th>QR Code</th>
+                    <th>Discount</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -189,11 +167,7 @@ $subscriptions = mysqli_fetch_all($result, MYSQLI_ASSOC);
                         </td>
                         <td><?php echo $subscription['subscription_description']; ?></td>
                         <td><?php echo $subscription['price']; ?></td>
-                        <td>
-                            <?php if (!empty($subscription['qr_code_img'])) { ?>
-                                <img src="img/<?php echo $subscription['qr_code_img']; ?>" alt="QR Code" width="50" height="50">
-                            <?php } ?>
-                        </td>
+                        <td><?php echo $subscription['discount_percentage']; ?>%</td>
                         <td>
                             <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#editSubscriptionModal" 
                                     data-subscription-id="<?php echo $subscription['subscription_id']; ?>" 
@@ -201,7 +175,7 @@ $subscriptions = mysqli_fetch_all($result, MYSQLI_ASSOC);
                                     data-status="<?php echo $subscription['status']; ?>" 
                                     data-description="<?php echo $subscription['subscription_description']; ?>"
                                     data-price="<?php echo $subscription['price']; ?>"
-                                    data-qr-code-img="img/<?php echo $subscription['qr_code_img']; ?>">
+                                    data-discount-percentage="<?php echo $subscription['discount_percentage']; ?>">
                                 Edit
                             </button>
                             <form method="POST" action="subscription_management.php" style="display: inline;">
@@ -248,8 +222,8 @@ $subscriptions = mysqli_fetch_all($result, MYSQLI_ASSOC);
                             <input type="number" class="form-control" id="price" name="price" required>
                         </div>
                         <div class="form-group">
-                            <label for="qr_code_img">QR Code Image:</label>
-                            <input type="file" class="form-control-file" id="qr_code_img" name="qr_code_img">
+                            <label for="discount_percentage">Discount Percentage:</label>
+                            <input type="number" class="form-control" id="discount_percentage" name="discount_percentage" min="0" max="100" step="0.01">
                         </div>
                         <button type="submit" class="btn btn-success" name="update_subscription">Update Subscription</button>
                     </form>
@@ -271,19 +245,21 @@ $subscriptions = mysqli_fetch_all($result, MYSQLI_ASSOC);
             const status = button.getAttribute('data-status');
             const description = button.getAttribute('data-description');
             const price = button.getAttribute('data-price');
-            const qrCodeImg = button.getAttribute('data-qr-code-img');
+            const discountPercentage = button.getAttribute('data-discount-percentage');
 
             const modalSubscriptionId = editSubscriptionModal.querySelector('#subscriptionId');
             const modalSubscriptionPlan = editSubscriptionModal.querySelector('#subscription_plan');
             const modalStatus = editSubscriptionModal.querySelector('#status');
             const modalDescription = editSubscriptionModal.querySelector('#subscription_description');
             const modalPrice = editSubscriptionModal.querySelector('#price');
+            const modalDiscountPercentage = editSubscriptionModal.querySelector('#discount_percentage');
 
             modalSubscriptionId.value = subscriptionId;
             modalSubscriptionPlan.value = subscriptionPlan;
             modalStatus.value = status;
             modalDescription.value = description;
             modalPrice.value = price;
+            modalDiscountPercentage.value = discountPercentage;
         });
     </script>
     <?php include('include/footer.php')?>

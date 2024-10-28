@@ -28,18 +28,26 @@
             <table class="table table-hover table-bordered">
                 <thead class="" style="background-color: #508D4E; color: white;">
                     <tr>
+                        <th scope="col">ID</th>
                         <th scope="col">Name</th>
+                        <th scope="col">Username</th>
                         <th scope="col">Email</th>
                         <th scope="col">Role</th>
+                        <th scope="col">Created</th>
                         <th scope="col">Status</th>
+                        <th scope="col">Profile Picture</th>
+                        <th scope="col">Free Meal Claimed</th>
+                        <th scope="col">Order Count</th>
                         <th scope="col">Subscription Status</th>
+                        <th scope="col">Birthday</th>
+                        <th scope="col">Address</th>
                         <th scope="col">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php
                     // Fetch users
-                    $sql = "SELECT user_id, username, email, role, status, subscription_status FROM users";
+                    $sql = "SELECT user_id, username, full_name, email, role, created_at, status, profile_picture, free_meal_claimed, order_count, subscription_status, birthday, address FROM users";
 
                     // Apply search filter if a search term is provided
                     if (isset($_GET['search']) && !empty($_GET['search'])) {
@@ -52,13 +60,23 @@
                     if ($result->num_rows > 0) {
                         while ($row = $result->fetch_assoc()) {
                             echo "<tr>
+                                <td>{$row['user_id']}</td>
+                                <td>{$row['full_name']}</td>
                                 <td>{$row['username']}</td>
                                 <td>{$row['email']}</td>
                                 <td>{$row['role']}</td>
+                                <td>{$row['created_at']}</td>
                                 <td>
                                     <span class='badge ".($row['status'] == 'active' ? 'bg-success' : 'bg-danger')."'>{$row['status']}</span>
                                 </td>
+                                <td>
+                                    " . (!empty($row['profile_picture']) ? "<img src='uploads/{$row['profile_picture']}' alt='Profile Picture' width='50' height='50'>" : "-") . "
+                                </td>
+                                <td>{$row['free_meal_claimed']}</td>
+                                <td>{$row['order_count']}</td>
                                 <td>{$row['subscription_status']}</td>
+                                <td>{$row['birthday']}</td>
+                                <td>{$row['address']}</td>
                                 <td>
                                     <button class='btn btn-outline-danger rounded-pill btn-sm' data-bs-toggle='modal' data-bs-target='#blockModal' 
                                             data-userid='{$row['user_id']}' data-username='{$row['username']}' 
@@ -69,7 +87,7 @@
                             </tr>";
                         }
                     } else {
-                        echo "<tr><td colspan='6'>No users found</td></tr>";
+                        echo "<tr><td colspan='14'>No users found</td></tr>";
                     }
                     $conn->close();
                     ?>
