@@ -52,7 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['order_id']) && isset($
                     $item['quantity'], 
                     $item['price'],
                     $order['shipping_address'], 
-                    $order['payment_method'], 
+                    $order['payment_id'], 
                     $order['reference_number'],
                 );
                 $stmt->execute();
@@ -114,17 +114,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['order_id']) && isset($
     <?php include('include/nav.php') ?>
 
     <div class="container mt-5">
-    <h1 class="text-center mb-4">Orders Management</h1>
-    <!-- Search Bar -->
-    <div class="mb-3">
-        <form action="search_orders.php" method="GET"> 
-            <div class="input-group">
-                <input type="text" class="form-control" name="search" placeholder="Search by order number, username, or status..." aria-label="Search">
-                <button class="btn btn-outline-secondary" type="submit">Search</button>
-            </div>
-        </form>
-    </div>
-    <table class="table table-striped table-responsive">
+        <h1 class="text-center mb-4">Orders Management</h1>
+        <!-- Search Bar -->
+        <div class="mb-3">
+            <form action="search_orders.php" method="GET"> 
+                <div class="input-group">
+                    <input type="text" class="form-control" name="search" placeholder="Search by order number, username, or status..." aria-label="Search">
+                    <button class="btn btn-outline-secondary" type="submit">Search</button>
+                </div>
+            </form>
+        </div>
+        <table class="table table-striped table-responsive">
             <thead class="" style="background-color: #508D4E; color: white;">
                 <tr>
                     <th scope="col">Order Number</th>
@@ -132,7 +132,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['order_id']) && isset($
                     <th scope="col">Order Date</th>
                     <th scope="col">Items</th>
                     <th scope="col">Shipping Address</th>
-                    <th scope="col">Payment Method</th>
+                    <th scope="col">Payment Method</th> <!--- Changed the column name -->
                     <th scope="col">Reference Number</th>
                     <th scope="col">Status</th>
                     <th scope="col">Actions</th>
@@ -143,7 +143,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['order_id']) && isset($
                 // Fetch orders along with their items, user details, and product details
                 $query = "
                     SELECT o.order_id, o.user_id, o.total_price, o.status, o.order_date, 
-                           o.shipping_address, o.payment_method, o.reference_number, 
+                           o.shipping_address, o.payment_id, o.reference_number, 
                            u.username, 
                            oi.order_item_id, oi.product_id, oi.quantity, oi.price, 
                            p.product_name 
@@ -172,7 +172,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['order_id']) && isset($
                     }
                 }
 
-                foreach ($orders as $orderId => $order): ?>
+                foreach ($orders as $orderId => $order): 
+                    // Fetch the payment method name based on payment_id
+                    $paymentMethodsSql = "SELECT `method_name` FROM `payment_methods` WHERE `payment_method_id` = '" . $order['details']['payment_id'] . "'";
+                    $paymentMethodsResult = mysqli_query($conn, $paymentMethodsSql);
+                    $paymentMethodRow = mysqli_fetch_assoc($paymentMethodsResult);
+                    $paymentMethodName = isset($paymentMethodRow['method_name']) ? $paymentMethodRow['method_name'] : 'Cash on Delivery'; // Display COD if payment_id is 0
+                ?>
                 <tr>
                     <td>#<?= $order['details']['order_id'] ?></td>
                     <td><?= htmlspecialchars($order['details']['username']) ?></td>
@@ -209,7 +215,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['order_id']) && isset($
                         </div>
                     </td>
                     <td><?= htmlspecialchars($order['details']['shipping_address']) ?></td>
-                    <td><?= htmlspecialchars($order['details']['payment_method']) ?></td>
+                    <td><?= $paymentMethodName; ?></td> <!--- Display method_name -->
                     <td><?= htmlspecialchars($order['details']['reference_number']) ?></td>
                     <td>
                         <span class="badge 

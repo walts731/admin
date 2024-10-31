@@ -1,12 +1,6 @@
 <?php
     include('include/connect.php');
-    session_start();
-
-    // Check if the admin is logged in
-    if (!isset($_SESSION['admin_id'])) {
-        header('Location: admin_login.php');
-        exit;
-    }
+    
 
     // Handle delivery status update
     if (isset($_POST['update_delivery_status'])) {

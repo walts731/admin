@@ -39,16 +39,19 @@
                     `oh`.`quantity`, 
                     `oh`.`price`,
                     `oh`.`shipping_address`,
-                    `oh`.`payment_method`,
+                    `oh`.`payment_method`,  
                     `oh`.`reference_number`,
                     `p`.`product_name` AS `product_name`,
-                    `u`.`username` AS `username` 
+                    `u`.`username` AS `username`,
+                    `pm`.`method_name` AS `method_name`  -- Added method_name
                 FROM 
                     `orders_history` AS `oh`
                 JOIN 
                     `products` AS `p` ON `oh`.`product_id` = `p`.`product_id`
                 JOIN 
                     `users` AS `u` ON `oh`.`user_id` = `u`.`user_id`
+                LEFT JOIN 
+                    `payment_methods` AS `pm` ON `oh`.`payment_method` = `pm`.`payment_method_id`
                 ORDER BY `oh`.`order_date` DESC"; // Added ORDER BY clause
         $result = $conn->query($sql);
 
@@ -65,9 +68,10 @@
                             'status' => $row['status'],
                             'archived_at' => date('M d Y h:ia', strtotime($row["archived_at"])),
                             'shipping_address' => $row['shipping_address'],
-                            'payment_method' => $row['payment_method'],
+                            'payment_method' => $row['payment_method'], 
                             'reference_number' => $row['reference_number'],
-                            'total_price' => $row['total_price'] // Assuming total_price is already calculated
+                            'total_price' => $row['total_price'], // Assuming total_price is already calculated
+                            'method_name' => $row['method_name'] // Added payment_method_name
                         ],
                         'items' => []
                     ];
@@ -114,7 +118,7 @@
                     </td>
                     <td><?= $order['details']['archived_at'] ?></td>
                     <td><?= $order['details']['shipping_address'] ?></td>
-                    <td><?= $order['details']['payment_method'] ?></td>
+                    <td><?= $order['details']['method_name'] ?></td>  <!--- Display payment_method_name -->
                     <td><?= $order['details']['reference_number'] ?></td>
                     <td><?= number_format($order['details']['total_price'], 2) ?></td>
                     <td>
