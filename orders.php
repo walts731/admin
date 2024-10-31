@@ -35,13 +35,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['order_id']) && isset($
 
             // Prepare to insert into orders_history
             $insertHistoryQuery = "INSERT INTO orders_history 
-                (order_id, user_id, total_price, status, order_date, order_item_id, product_id, quantity, price, shipping_address, payment_method, reference_number, archived_at) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
+                (order_id, user_id, total_price, status, order_date, order_item_id, product_id, quantity, price, shipping_address, payment_method, reference_number, payment_status, archived_at) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
 
             // Loop through each item and insert it into orders_history and update inventory
             while ($item = $itemsResult->fetch_assoc()) {
+                // Set payment_status to 'Paid'
+                $paymentStatus = 'Paid'; 
+
                 $stmt = $conn->prepare($insertHistoryQuery);
-                $stmt->bind_param("iissiiiddsss", 
+                $stmt->bind_param("iissiiiddssss", 
                     $order['order_id'], 
                     $order['user_id'], 
                     $order['total_price'], 
@@ -54,6 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['order_id']) && isset($
                     $order['shipping_address'], 
                     $order['payment_id'], 
                     $order['reference_number'],
+                    $paymentStatus, // Pass the variable by reference
                 );
                 $stmt->execute();
 

@@ -41,6 +41,7 @@
                     `oh`.`shipping_address`,
                     `oh`.`payment_method`,  
                     `oh`.`reference_number`,
+                    `oh`.`payment_status`,  -- Added payment_status
                     `p`.`product_name` AS `product_name`,
                     `u`.`username` AS `username`,
                     `pm`.`method_name` AS `method_name`  -- Added method_name
@@ -71,7 +72,8 @@
                             'payment_method' => $row['payment_method'], 
                             'reference_number' => $row['reference_number'],
                             'total_price' => $row['total_price'], // Assuming total_price is already calculated
-                            'method_name' => $row['method_name'] // Added payment_method_name
+                            'method_name' => $row['method_name'], // Added payment_method_name
+                            'payment_status' => $row['payment_status'] // Added payment_status
                         ],
                         'items' => []
                     ];
@@ -97,6 +99,7 @@
                         <th>Shipping Address</th>
                         <th>Payment Method</th>
                         <th>Reference Number</th>
+                        <th>Payment Status</th>  <!-- Added Payment Status -->
                         <th>Total Amount</th>
                         <th>Items</th>
                     </tr>
@@ -120,6 +123,7 @@
                     <td><?= $order['details']['shipping_address'] ?></td>
                     <td><?= $order['details']['method_name'] ?></td>  <!--- Display payment_method_name -->
                     <td><?= $order['details']['reference_number'] ?></td>
+                    <td><?= $order['details']['payment_status'] ?></td> <!-- Display payment_status -->
                     <td><?= number_format($order['details']['total_price'], 2) ?></td>
                     <td>
                         <!-- Eye icon to view order items -->

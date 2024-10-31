@@ -1,197 +1,182 @@
+<?php
+    include('include/connect.php');
+?>
+
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Orders Report</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="css/product.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
+    <title>Daily Sales Report</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.5.0/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="css/daily_reports.css"> 
 </head>
-
 <body style="background-color: #D6EFD8;">
     <!-- Navigation Bar -->
     <?php include('include/nav.php'); ?>
 
     <div class="container mt-5">
-        <h1 class="text-center mb-4">Daily Orders Reports</h1>
-
-        <!-- Search Bar -->
-        <div class="input-group mb-3">
-            <input type="text" class="form-control" id="searchInput" placeholder="Search by order ID, username, or status...">
-            <button class="btn btn-outline-secondary" type="button" id="searchButton">Search</button>
-        </div>
+        <h2 class="text-center mb-4">Daily Sales Report (Based on Archived At)</h2>
 
         <?php
-        include('include/connect.php');
-
-        // SQL query to fetch data from orders_history table, grouped by the day of archiving
+        // Fetch data from the database, grouped by archived_at and summing total_price
         $sql = "SELECT 
-                    DATE(oh.archived_at) AS report_date,
-                    oh.history_id, 
-                    oh.order_id, 
-                    oh.user_id, 
-                    oh.total_price, 
-                    oh.status, 
-                    oh.archived_at, 
-                    oh.order_item_id, 
-                    oh.product_id, 
-                    oh.quantity, 
-                    oh.price, 
-                    oh.shipping_address, 
-                    oh.payment_method, 
-                    oh.reference_number, 
-                    p.product_name AS product_name, 
-                    u.username AS username 
-                FROM orders_history AS oh
-                JOIN products AS p ON oh.product_id = p.product_id
-                JOIN users AS u ON oh.user_id = u.user_id
-                ORDER BY report_date DESC, oh.order_date DESC"; // Grouped by archived_at date
+                    DATE(archived_at) AS archived_date, 
+                    SUM(total_price) AS daily_total 
+                FROM 
+                    orders_history 
+                GROUP BY 
+                    archived_date
+                ORDER BY 
+                    archived_date";
+                    
         $result = $conn->query($sql);
 
         if ($result->num_rows > 0) {
-            // Group orders by report_date (archived_at date)
-            $dailyReports = [];
             while ($row = $result->fetch_assoc()) {
-                $date = $row['report_date'];
-                if (!isset($dailyReports[$date])) {
-                    $dailyReports[$date] = [];
+                echo "<div class='mb-4'>
+                        <h3 class='text-center'>{$row['archived_date']}</h3> 
+                    </div>"; 
+
+                echo "<div class='text-center mb-3'>
+                        <h4>Total Sales: {$row['daily_total']}</h4>
+                    </div>"; 
+
+                $sqlOrders = "SELECT 
+                                history_id, 
+                                order_id, 
+                                user_id, 
+                                total_price, 
+                                status, 
+                                archived_at, 
+                                order_item_id, 
+                                product_id, 
+                                quantity, 
+                                price, 
+                                shipping_address, 
+                                payment_method, 
+                                reference_number, 
+                                payment_status
+                            FROM 
+                                orders_history 
+                            WHERE 
+                                DATE(archived_at) = '{$row['archived_date']}'
+                            ORDER BY 
+                                archived_at";
+
+                $resultOrders = $conn->query($sqlOrders);
+
+                if ($resultOrders->num_rows > 0) {
+                    echo "<div class='table-responsive'><table class='table table-striped table-bordered'>"; 
+                    echo "<thead class='table-dark'><tr>";
+                    echo "<th>Order Number</th><th>User ID</th><th>Total Price</th><th>Status</th><th>Archived At</th><th>Order Item ID</th><th>Product ID</th><th>Quantity</th><th>Price</th><th>Shipping Address</th><th>Payment Method</th><th>Reference Number</th><th>Payment Status</th></tr></thead><tbody>";
+
+                    while ($rowOrder = $resultOrders->fetch_assoc()) {
+                        echo "<tr>";
+                        echo "<td>" . $rowOrder["order_id"] . "</td>";
+                        echo "<td><a href='#userModal" . $rowOrder["user_id"] . "' data-toggle='modal' data-target='#userModal" . $rowOrder["user_id"] . "'><i class='bi bi-eye-fill'></i></a></td>";
+                        echo "<td>" . $rowOrder["total_price"] . "</td>";
+                        echo "<td>" . $rowOrder["status"] . "</td>";
+                        echo "<td>" . $rowOrder["archived_at"] . "</td>";
+                        echo "<td><a href='#orderItemModal" . $rowOrder["order_item_id"] . "' data-toggle='modal' data-target='#orderItemModal" . $rowOrder["order_item_id"] . "'><i class='bi bi-eye-fill'></i></a></td>";
+                        echo "<td>" . $rowOrder["product_id"] . "</td>";
+                        echo "<td>" . $rowOrder["quantity"] . "</td>";
+                        echo "<td>" . $rowOrder["price"] . "</td>";
+                        echo "<td>" . $rowOrder["shipping_address"] . "</td>";
+                        echo "<td>" . $rowOrder["payment_method"] . "</td>";
+                        echo "<td>" . $rowOrder["reference_number"] . "</td>";
+                        echo "<td>" . $rowOrder["payment_status"] . "</td>";
+                        echo "</tr>";
+                    }
+                    echo "</tbody></table></div>";
+                } else {
+                    echo "<p class='text-center'>No orders found for this day.</p>";
                 }
-                $dailyReports[$date][] = $row;
             }
-
-            // Output each day's report
-            foreach ($dailyReports as $reportDate => $orders) : 
-                // Calculate total price for the day
-                $dailyTotal = 0;
-                foreach ($orders as $order) {
-                    $dailyTotal += $order['total_price'];
-                }
-        ?>
-                <!-- Daily Report Section -->
-                <div class="card mb-4">
-                    <div class="card-header text-white" style="background-color: #508D4E;">
-                        <h3 class="card-title"><?= date('F j, Y', strtotime($reportDate)) ?></h3>
-                    </div>
-                    <div class="card-body">
-                        <p class="card-text"><strong>Total Sales for the Day: </strong> $<?= number_format($dailyTotal, 2) ?></p>
-                        
-                        <div class="table-responsive">
-                            <table class="table table-striped table-bordered">
-                                <thead class="" style="background-color: #508D4E; color: white;">
-                                    <tr>
-                                        <th>Order Number</th>
-                                        <th>Username</th>
-                                        <th>Status</th>
-                                        <th>Archived At</th>
-                                        <th>Shipping Address</th>
-                                        <th>Payment Method</th>
-                                        <th>Reference Number</th>
-                                        <th>Total Amount</th>
-                                        <th>Items</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php foreach ($orders as $order) : ?>
-                                        <tr>
-                                            <td><?= $order['order_id'] ?></td>
-                                            <td><?= $order['username'] ?></td>
-                                            <td style="font-weight: bold;">
-                                                <?php if ($order['status'] === 'completed') : ?>
-                                                    <span style="color: green;"><?= $order['status'] ?></span>
-                                                <?php elseif ($order['status'] === 'cancelled') : ?>
-                                                    <span style="color: red;"><?= $order['status'] ?></span>
-                                                <?php else : ?>
-                                                    <?= $order['status'] ?>
-                                                <?php endif; ?>
-                                            </td>
-                                            <td><?= date('M d Y h:ia', strtotime($order['archived_at'])) ?></td>
-                                            <td><?= $order['shipping_address'] ?></td>
-                                            <td><?= $order['payment_method'] ?></td>
-                                            <td><?= $order['reference_number'] ?></td>
-                                            <td><?= number_format($order['total_price'], 2) ?></td>
-                                            <td>
-                                                <!-- Eye icon to view order items -->
-                                                <button class="btn btn-link" data-bs-toggle="modal" data-bs-target="#orderItemsModal<?= $order['order_id'] ?>">
-                                                    <i class="bi bi-eye"></i>
-                                                </button>
-
-                                                <!-- Modal for displaying order items -->
-                                                <div class="modal fade" id="orderItemsModal<?= $order['order_id'] ?>" tabindex="-1" aria-labelledby="orderItemsModalLabel" aria-hidden="true">
-                                                    <div class="modal-dialog">
-                                                        <div class="modal-content">
-                                                            <div class="modal-header">
-                                                                <h5 class="modal-title" id="orderItemsModalLabel">Order Items for Order #<?= $order['order_id'] ?></h5>
-                                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                            </div>
-                                                            <div class="modal-body">
-                                                                <ul class="list-group">
-                                                                    <?php
-                                                                    $item_sql = "SELECT product_name, quantity, price FROM order_items WHERE order_id = " . $order['order_id'];
-                                                                    $item_result = $conn->query($item_sql);
-                                                                    while ($item_row = $item_result->fetch_assoc()) : ?>
-                                                                        <li class="list-group-item">
-                                                                            <strong><?= $item_row['product_name'] ?></strong> (<?= $item_row['quantity'] ?>) - 
-                                                                            Price: <?= number_format($item_row['price'], 2) ?>
-                                                                        </li>
-                                                                    <?php endwhile; ?>
-                                                                </ul>
-                                                            </div>
-                                                            <div class="modal-footer">
-                                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            <?php endforeach; ?>
-
-        <?php
         } else {
-            echo '<div class="alert alert-warning" role="alert">No results found.</div>';
+            echo "<p class='text-center'>No sales data found.</p>";
         }
 
-        // Close the connection
+        // User details modals
+        $sqlUsers = "SELECT DISTINCT user_id FROM orders_history";
+        $resultUsers = $conn->query($sqlUsers);
+
+        if ($resultUsers->num_rows > 0) {
+            while ($rowUser = $resultUsers->fetch_assoc()) {
+                $userId = $rowUser["user_id"];
+                $sqlUserDetails = "SELECT * FROM users WHERE user_id = '$userId'";
+                $resultUserDetails = $conn->query($sqlUserDetails);
+
+                if ($resultUserDetails->num_rows > 0) {
+                    $rowUserDetails = $resultUserDetails->fetch_assoc();
+
+                    echo "<div class='modal fade' id='userModal" . $userId . "' tabindex='-1' role='dialog' aria-labelledby='userModalLabel" . $userId . "' aria-hidden='true'>";
+                    echo "<div class='modal-dialog' role='document'>";
+                    echo "<div class='modal-content'>";
+                    echo "<div class='modal-header'>";
+                    echo "<h5 class='modal-title' id='userModalLabel" . $userId . "'>User Details</h5>";
+                    echo "<button type='button' class='close' data-dismiss='modal' aria-label='Close'>";
+                    echo "<span aria-hidden='true'>&times;</span>";
+                    echo "</button>";
+                    echo "</div>";
+                    echo "<div class='modal-body'>";
+                    echo "<p><strong>User ID:</strong> " . $rowUserDetails["user_id"] . "</p>";
+                    echo "<p><strong>Username:</strong> " . $rowUserDetails["username"] . "</p>";
+                    echo "<p><strong>Full Name:</strong> " . $rowUserDetails["full_name"] . "</p>";
+                    echo "<p><strong>Email:</strong> " . $rowUserDetails["email"] . "</p>";
+                    echo "<p><strong>Role:</strong> " . $rowUserDetails["role"] . "</p>";
+                    echo "<p><strong>Status:</strong> " . $rowUserDetails["status"] . "</p>";
+                    echo "</div>";
+                    echo "<div class='modal-footer'>";
+                    echo "<button type='button' class='btn btn-secondary' data-dismiss='modal'>Close</button>";
+                    echo "</div>";
+                    echo "</div>";
+                    echo "</div>";
+                    echo "</div>";
+                }
+            }
+        }
+
+        // Order Item details modals
+        $sqlOrderItems = "SELECT DISTINCT order_item_id, product_id, quantity, price FROM orders_history";
+        $resultOrderItems = $conn->query($sqlOrderItems);
+
+        if ($resultOrderItems->num_rows > 0) {
+            while ($rowItem = $resultOrderItems->fetch_assoc()) {
+                $orderItemId = $rowItem["order_item_id"];
+
+                echo "<div class='modal fade' id='orderItemModal" . $orderItemId . "' tabindex='-1' role='dialog' aria-labelledby='orderItemModalLabel" . $orderItemId . "' aria-hidden='true'>";
+                echo "<div class='modal-dialog' role='document'>";
+                echo "<div class='modal-content'>";
+                echo "<div class='modal-header'>";
+                echo "<h5 class='modal-title' id='orderItemModalLabel" . $orderItemId . "'>Order Item Details</h5>";
+                echo "<button type='button' class='close' data-dismiss='modal' aria-label='Close'>";
+                echo "<span aria-hidden='true'>&times;</span>";
+                echo "</button>";
+                echo "</div>";
+                echo "<div class='modal-body'>";
+                echo "<p><strong>Order Item ID:</strong> " . $orderItemId . "</p>";
+                echo "<p><strong>Product ID:</strong> " . $rowItem["product_id"] . "</p>";
+                echo "<p><strong>Quantity:</strong> " . $rowItem["quantity"] . "</p>";
+                echo "<p><strong>Price:</strong> " . $rowItem["price"] . "</p>";
+                echo "</div>";
+                echo "<div class='modal-footer'>";
+                echo "<button type='button' class='btn btn-secondary' data-dismiss='modal'>Close</button>";
+                echo "</div>";
+                echo "</div>";
+                echo "</div>";
+                echo "</div>";
+            }
+        }
+
         $conn->close();
         ?>
     </div>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script>
-        $(document).ready(function() {
-            // Search functionality
-            $("#searchButton").click(function() {
-                var searchTerm = $("#searchInput").val().toLowerCase();
-                $("tbody tr").each(function() {
-                    var orderID = $(this).find("td:first").text().toLowerCase();
-                    var username = $(this).find("td:nth-child(2)").text().toLowerCase();
-                    var status = $(this).find("td:nth-child(3)").text().toLowerCase();
-
-                    if (
-                        orderID.indexOf(searchTerm) > -1 || 
-                        username.indexOf(searchTerm) > -1 || 
-                        status.indexOf(searchTerm) > -1
-                    ) {
-                        $(this).show();
-                    } else {
-                        $(this).hide();
-                    }
-                });
-            });
-        });
-    </script>
-    <?php include('include/footer.php')?> 
-
+    <!-- Include JS libraries for jQuery, Popper.js, and Bootstrap -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.4.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
-
 </html>
