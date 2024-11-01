@@ -44,12 +44,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['order_id']) && isset($
                 $paymentStatus = 'Paid'; 
 
                 $stmt = $conn->prepare($insertHistoryQuery);
-                $stmt->bind_param("iissiiiddssss", 
+                $stmt->bind_param("iisssiiddssss", 
                     $order['order_id'], 
                     $order['user_id'], 
                     $order['total_price'], 
                     $status,  // The updated status
-                    $order['order_date'],  
+                    $order['order_date'],  // Pass order_date as a parameter
                     $item['order_item_id'], 
                     $item['product_id'], 
                     $item['quantity'], 
@@ -182,11 +182,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['order_id']) && isset($
                     $paymentMethodsResult = mysqli_query($conn, $paymentMethodsSql);
                     $paymentMethodRow = mysqli_fetch_assoc($paymentMethodsResult);
                     $paymentMethodName = isset($paymentMethodRow['method_name']) ? $paymentMethodRow['method_name'] : 'Cash on Delivery'; // Display COD if payment_id is 0
+
+                    // Format the order_date
+                    $formattedOrderDate = date('M d, Y h:i A', strtotime($order['details']['order_date']));
                 ?>
                 <tr>
                     <td>#<?= $order['details']['order_id'] ?></td>
                     <td><?= htmlspecialchars($order['details']['username']) ?></td>
-                    <td><?= htmlspecialchars($order['details']['order_date']) ?></td>
+                    <td><?= htmlspecialchars($formattedOrderDate) ?></td>
                     <td>
                         <!-- Eye icon to view order items -->
                         <button class="btn btn-link" data-bs-toggle="modal" data-bs-target="#orderItemsModal<?= $orderId ?>">

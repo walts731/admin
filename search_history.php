@@ -71,14 +71,17 @@
                   </thead>';
             echo '<tbody>';
 
-            while ($row = $result->fetch_assoc()) : ?>
+            while ($row = $result->fetch_assoc()) : 
+                // Format the order date
+                $formattedOrderDate = date('M d, Y', strtotime($row['order_date']));
+            ?>
                 <tr>
                     <td><?= $row['history_id'] ?></td>
                     <td><?= $row['order_id'] ?></td>
                     <td><?= $row['user_id'] ?></td>
                     <td><?= $row['total_price'] ?></td>
                     <td><?= $row['status'] ?></td>
-                    <td><?= $row['order_date'] ?></td>
+                    <td><?= $formattedOrderDate ?></td> <!-- Display formatted order_date -->
                     <td><?= $row['archived_at'] ?></td>
                     <td><?= $row['order_item_id'] ?></td>
                     <td><?= $row['product_id'] ?></td>
@@ -114,6 +117,7 @@
                     var isMatch = false; // Flag to track if any column matches
                     $(this).find("td").each(function() {
                         var cellText = $(this).text().toLowerCase();
+                        // Check if searchTerm is a substring of the cell text
                         if (cellText.indexOf(searchTerm) > -1) {
                             isMatch = true; // Set flag to true if a match is found
                             return false; // Stop iterating through cells in this row

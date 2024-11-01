@@ -51,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['order_id']) && isset($
                     $item['quantity'], 
                     $item['price'],
                     $order['shipping_address'], 
-                    $order['payment_method'], 
+                    $order['payment_id'], 
                     $order['reference_number'],
                 );
                 $stmt->execute();
@@ -110,7 +110,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['order_id']) && isset($
     <div class="mb-3">
         <form action="search_orders.php" method="GET"> 
             <div class="input-group">
-                <input type="text" class="form-control" name="search" placeholder="Search by order number, username, or status..." aria-label="Search">
+                <input type="text" class="form-control" name="search" placeholder="Search all columns..." aria-label="Search">
                 <button class="btn btn-outline-secondary" type="submit">Search</button>
             </div>
         </form>
@@ -134,7 +134,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['order_id']) && isset($
                 // Fetch orders along with their items, user details, and product details
                 $query = "
                     SELECT o.order_id, o.user_id, o.total_price, o.status, o.order_date, 
-                           o.shipping_address, o.payment_method, o.reference_number, 
+                           o.shipping_address, o.payment_id, o.reference_number, 
                            u.username, 
                            oi.order_item_id, oi.product_id, oi.quantity, oi.price, 
                            p.product_name 
@@ -147,7 +147,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['order_id']) && isset($
                 // Apply search filter if a search term is provided
                 if (isset($_GET['search']) && !empty($_GET['search'])) {
                     $searchTerm = $_GET['search'];
-                    $query .= " WHERE o.order_id LIKE '%$searchTerm%' OR u.username LIKE '%$searchTerm%' OR o.status LIKE '%$searchTerm%'";
+                    // Use DATE_FORMAT to search for the order date in the specified format
+                    $query .= " WHERE DATE_FORMAT(o.order_date, '%b %d, %Y') LIKE '%$searchTerm%'";
                 }
 
                 $result = mysqli_query($conn, $query);
@@ -163,11 +164,28 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['order_id']) && isset($
                     }
                 }
 
-                foreach ($orders as $orderId => $order): ?>
+                foreach ($orders as $orderId => $order): 
+                    // Fetch payment method details
+                    if ($order['details']['payment_id'] == 0) {
+                        $paymentMethod = 'Cash on Delivery';
+                    } else {
+                        $paymentMethodQuery = "SELECT `method_name` FROM `payment_methods` WHERE `payment_method_id` = ?";
+                        $stmt = $conn->prepare($paymentMethodQuery);
+                        $stmt->bind_param("i", $order['details']['payment_id']);
+                        $stmt->execute();
+                        $paymentMethodResult = $stmt->get_result();
+                        $paymentMethod = $paymentMethodResult->fetch_assoc();
+                        $paymentMethod = $paymentMethod['method_name'];
+                        $stmt->close();
+                    }
+
+                    // Format the order_date
+                    $formattedOrderDate = date('M d, Y h:i A', strtotime($order['details']['order_date']));
+                ?>
                 <tr>
                     <td>#<?= $order['details']['order_id'] ?></td>
                     <td><?= htmlspecialchars($order['details']['username']) ?></td>
-                    <td><?= htmlspecialchars($order['details']['order_date']) ?></td>
+                    <td><?= htmlspecialchars($formattedOrderDate) ?></td>
                     <td>
                         <!-- Eye icon to view order items -->
                         <button class="btn btn-link" data-bs-toggle="modal" data-bs-target="#orderItemsModal<?= $orderId ?>">
@@ -200,7 +218,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['order_id']) && isset($
                         </div>
                     </td>
                     <td><?= htmlspecialchars($order['details']['shipping_address']) ?></td>
-                    <td><?= htmlspecialchars($order['details']['payment_method']) ?></td>
+                    <td><?= htmlspecialchars($paymentMethod) ?></td>
                     <td><?= htmlspecialchars($order['details']['reference_number']) ?></td>
                     <td>
                         <span class="badge 

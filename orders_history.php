@@ -18,7 +18,7 @@
 
         <!-- Search Bar -->
         <div class="input-group mb-3">
-            <input type="text" class="form-control" id="searchInput" placeholder="Search by order ID, username, or status...">
+            <input type="text" class="form-control" id="searchInput" placeholder="Search by order ID, username, status, or date...">
             <button class="btn btn-outline-secondary" type="button" id="searchButton">Search</button>
         </div>
 
@@ -73,7 +73,8 @@
                             'reference_number' => $row['reference_number'],
                             'total_price' => $row['total_price'], // Assuming total_price is already calculated
                             'method_name' => $row['method_name'], // Added payment_method_name
-                            'payment_status' => $row['payment_status'] // Added payment_status
+                            'payment_status' => $row['payment_status'], // Added payment_status
+                            'order_date' => date('M d, Y h:i A', strtotime($row['order_date'])) // Format order_date
                         ],
                         'items' => []
                     ];
@@ -96,6 +97,7 @@
                         <th>Username</th>
                         <th>Status</th>
                         <th>Archived At</th>
+                        <th>Order Date</th> <!-- Added Order Date column -->
                         <th>Shipping Address</th>
                         <th>Payment Method</th>
                         <th>Reference Number</th>
@@ -120,8 +122,17 @@
                         <?php endif; ?>
                     </td>
                     <td><?= $order['details']['archived_at'] ?></td>
+                    <td><?= $order['details']['order_date'] ?></td> <!-- Display order_date -->
                     <td><?= $order['details']['shipping_address'] ?></td>
-                    <td><?= $order['details']['method_name'] ?></td>  <!--- Display payment_method_name -->
+                    <td>
+                        <?php 
+                        if ($order['details']['payment_method'] == 0) {
+                            echo 'Cash on Delivery'; 
+                        } else {
+                            echo $order['details']['method_name']; 
+                        }
+                        ?>
+                    </td>
                     <td><?= $order['details']['reference_number'] ?></td>
                     <td><?= $order['details']['payment_status'] ?></td> <!-- Display payment_status -->
                     <td><?= number_format($order['details']['total_price'], 2) ?></td>
@@ -183,11 +194,13 @@
                     var orderID = $(this).find("td:first").text().toLowerCase();
                     var username = $(this).find("td:nth-child(2)").text().toLowerCase();
                     var status = $(this).find("td:nth-child(3)").text().toLowerCase();
+                    var orderDate = $(this).find("td:nth-child(5)").text().toLowerCase(); // Get order date
 
                     if (
                         orderID.indexOf(searchTerm) > -1 || 
                         username.indexOf(searchTerm) > -1 || 
-                        status.indexOf(searchTerm) > -1
+                        status.indexOf(searchTerm) > -1 || 
+                        orderDate.indexOf(searchTerm) > -1 // Check if order date contains search term
                     ) {
                         $(this).show();
                     } else {
