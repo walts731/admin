@@ -23,6 +23,7 @@ include ('include/connect.php');
             <label for="searchDate">Search by Archived Date:</label>
             <input type="date" class="form-control" id="searchDate" name="searchDate">
             <button class="btn btn-primary mt-2" id="searchButton">Search</button>
+            <button class="btn btn-success mt-2" id="generatePDFButton">Generate PDF</button>
         </div>
 
         <div id="salesReport">
@@ -44,7 +45,6 @@ include ('include/connect.php');
                 while ($row = $result->fetch_assoc()) {
                     echo "<div class='mb-4' data-date='" . $row['archived_date'] . "'>
                             <h3 class='text-center'>" . date("M d, Y ", strtotime($row['archived_date'])) . "</h3> 
-                            <button class='btn btn-secondary toggle-table' data-target='table" . $row['archived_date'] . "'>Show/Hide Table</button>
                         </div>"; 
 
                     echo "<div class='text-center mb-3' data-date='" . $row['archived_date'] . "'>
@@ -76,17 +76,15 @@ include ('include/connect.php');
                     $resultOrders = $conn->query($sqlOrders);
 
                     if ($resultOrders->num_rows > 0) {
-                        echo "<div class='table-responsive' data-date='" . $row['archived_date'] . "'><table class='table table-striped table-bordered' id='table" . $row['archived_date'] . "'>"; 
+                        echo "<div class='table-responsive' data-date='" . $row['archived_date'] . "'><table class='table table-striped table-bordered'>"; 
                         echo "<thead class='table-dark'><tr>";
-                        echo "<th>Order Number</th><th>User ID</th><th>Order Item ID</th><th>Quantity</th><th>Price</th><th>Total Price</th><th>Status</th><th>Archived At</th><th>Shipping Address</th><th>Payment Method</th><th>Reference Number</th><th>Payment Status</th></tr></thead><tbody>";
+                        echo "<th>Order Number</th><th>User</th><th>Order Items</th><th>Total Sum</th><th>Status</th><th>Archived At</th><th>Shipping Address</th><th>Payment Method</th><th>Ref No</th><th>Payment Status</th></tr></thead><tbody>";
 
                         while ($rowOrder = $resultOrders->fetch_assoc()) {
                             echo "<tr>";
                             echo "<td>" . $rowOrder["order_id"] . "</td>";
                             echo "<td><a href='#userModal" . $rowOrder["user_id"] . "' data-toggle='modal' data-target='#userModal" . $rowOrder["user_id"] . "'><i class='bi bi-eye-fill'></i></a></td>";
                             echo "<td><a href='#orderItemModal" . $rowOrder["order_id"] . "' data-toggle='modal' data-target='#orderItemModal" . $rowOrder["order_id"] . "'><i class='bi bi-eye-fill'></i></a></td>";
-                            echo "<td>" . $rowOrder["quantity"] . "</td>";
-                            echo "<td>" . $rowOrder["price"] . "</td>";
                             echo "<td>" . $rowOrder["total_price"] . "</td>";
                             echo "<td>" . $rowOrder["status"] . "</td>";
                             echo "<td>" . date("M d, Y h:ia", strtotime($rowOrder["archived_at"])) . "</td>"; // Format the date
@@ -243,10 +241,14 @@ include ('include/connect.php');
                 }
             });
 
-            // Toggle table visibility
-            $('.toggle-table').click(function() {
-                var targetTable = $(this).data('target');
-                $(targetTable).toggle();
+            $('#generatePDFButton').click(function() {
+                var searchDate = $('#searchDate').val();
+                if (searchDate) {
+                    // Redirect to generate_pdf.php with the selected date
+                    window.location.href = "generate_pdf.php?date=" + searchDate;
+                } else {
+                    alert("Please select a date first.");
+                }
             });
         });
     </script>
